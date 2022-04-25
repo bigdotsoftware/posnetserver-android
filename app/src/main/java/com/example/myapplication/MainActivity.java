@@ -10,12 +10,18 @@ import android.widget.TextView;
 import com.example.myapplication.databinding.ActivityMainBinding;
 
 import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
 
+import eu.bigdotsoftware.posnetserver.CancelRequest;
+import eu.bigdotsoftware.posnetserver.FormsAztecCodeRequest;
+import eu.bigdotsoftware.posnetserver.FormsBarcodeRequest;
 import eu.bigdotsoftware.posnetserver.LicenseInfo;
 import eu.bigdotsoftware.posnetserver.LicenseRegistrationInfo;
+import eu.bigdotsoftware.posnetserver.ParagonFakturaFooter;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaLine;
 import eu.bigdotsoftware.posnetserver.ParagonRequest;
 import eu.bigdotsoftware.posnetserver.ParagonResponse;
+import eu.bigdotsoftware.posnetserver.PosnetException;
 import eu.bigdotsoftware.posnetserver.PosnetRequest;
 import eu.bigdotsoftware.posnetserver.PosnetResponse;
 import eu.bigdotsoftware.posnetserver.PosnetServerAndroid;
@@ -27,25 +33,30 @@ import eu.bigdotsoftware.posnetserver.VatRatesGetResponse;
 
 public class MainActivity extends AppCompatActivity {
 
-
     private static final String TAG = "PosnetServerAndroid";
 
-    private ActivityMainBinding binding;
+    private ActivityMainBinding m_binding;
+
+    private PosnetServerAndroid m_posnetServerAndroid;
+    private String m_host;
+    private int m_port;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        m_binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(m_binding.getRoot());
 
         //---------------------------------------------------------------------------
         //Initialize
-        PosnetServerAndroid posnet = new PosnetServerAndroid();
-        posnet.addProcessListener(new ProcessWatcher() {
+        m_host = "192.168.0.68";
+        m_port = 12346;
+        m_posnetServerAndroid = new PosnetServerAndroid();
+        m_posnetServerAndroid.setProcessListener(new ProcessWatcher() {
             @Override
             public void onStart(PosnetRequest request) {
-                TextView tvErrorMessage = binding.tvErrorMessage;
+                TextView tvErrorMessage = m_binding.tvErrorMessage;
                 tvErrorMessage.setVisibility(View.GONE);
                 tvErrorMessage.setText("");
             }
@@ -75,56 +86,52 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onError(PosnetRequest request, String error) {
-                TextView tvErrorMessage = binding.tvErrorMessage;
+                TextView tvErrorMessage = m_binding.tvErrorMessage;
                 tvErrorMessage.setVisibility(View.VISIBLE);
                 tvErrorMessage.setText(error);
                 Log.e(TAG, error);
             }
         });
 
-        String host = "192.168.0.68";
-        int port = 12346;
+
 
         InputStream ins = getResources().openRawResource(
                 getResources().getIdentifier("cmbth_pl", "raw", getPackageName()));
-        posnet.InitializeErrorList(ins);
-        posnet.InitializeCache(host, port);
+        m_posnetServerAndroid.initializeErrorList(ins);
+
+        //---------------------------------------------------------------------------
+        //Vat cache initialization, use one of:
+        // - initializeCache - async method call
+        // - initializeCacheWait - blocking method
+        //For demo purposes and code simplification initializeCacheWait is used
+        try {
+            Boolean isOk = m_posnetServerAndroid.initializeCacheWait(m_host, m_port);
+            Log.i(TAG, "Cache initialization: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         //---------------------------------------------------------------------------
         //License validation
-        LicenseInfo info = posnet.validateLicenseFile(this, "Test.lic");
+        LicenseInfo info = m_posnetServerAndroid.validateLicenseFile(this, "Test.lic");
         Log.i(TAG, "License details | " + info.getCompanyName());
         for(int i=0;i<info.getExtrasCount();i++)
             Log.i(TAG, "License details | " + info.getExtras(i));
 
-        LicenseRegistrationInfo licenseRegistrationInfo = posnet.registerLicenseFile(this, "Test.lic");
+        LicenseRegistrationInfo licenseRegistrationInfo = m_posnetServerAndroid.registerLicenseFile(this, "Test.lic");
         if( !licenseRegistrationInfo.isOk())
             Log.e(TAG, "Cannot register license file: " + licenseRegistrationInfo.getError());
         else
             Log.e(TAG, "License file registered: OK");
 
-        //---------------------------------------------------------------------------
-        //Print
-        ParagonRequest paragon = ParagonRequest.Builder()
-                .addLine(ParagonFakturaLine.Builder()
-                        .setName("Towar 1")
-                        //.setVatPercent("23.00")
-                        .setVatIndex(0)
-                        .setPrice(100)
-                        .setQuantity(1.0f)
-                        .build())
-                .addLine(ParagonFakturaLine.Builder()
-                        .setName("Towar 2")
-                        //.setVatPercent("23.00")
-                        .setVatIndex(0)
-                        .setPrice(100)
-                        .setQuantity(1.0f)
-                        .build()
-                )
-                .setTotal(200)
-                .build();
+        try {
+            printFiscalPrintout();
+        } catch (PosnetException e) {
+            Log.e(TAG, "Posnet exception: " + e.getMessage());
+        }
 
-        posnet.sendRequest(host, port, paragon);
 
         // VatRatesGetRequest vatRatesGetRequest = new VatRatesGetRequest();
         // posnet.sendRequest(host, port, vatRatesGetRequest);
@@ -146,5 +153,60 @@ public class MainActivity extends AppCompatActivity {
         // HeaderSetRequest headerSetRequest = new HeaderSetRequest("My Company", true);
         // posnet.sendRequest(host, port, headerSetRequest);
     }
-    
+
+    private void printFiscalPrintout() throws PosnetException {
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+            .addLine(ParagonFakturaLine.Builder()
+                .setName("Towar 1")
+                //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                .setVatName("A", m_posnetServerAndroid.getVatCache())
+                //.setVatIndex(0)
+                .setPrice(100)
+                .setQuantity(2.0f)
+                .build())
+            .addLine(ParagonFakturaLine.Builder()
+                .setName("Towar 2")
+                //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                .setVatName("A", m_posnetServerAndroid.getVatCache())
+                //.setVatIndex(0)
+                .setPrice(100)
+                .setQuantity(1.0f)
+                .build()
+            )
+            .setTotal(300)
+            .setFooter(ParagonFakturaFooter.Builder()
+                .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                .setCashier("Jan Kowalski")
+                .setSystemnumber("ABC1234")
+                .setCashregisternumber("Kasa 5")
+                //.setBarcode(FormsBarcodeRequest.Builder()
+                //    .setCode("Hello")
+                //    .build())
+                .setBarcode(FormsAztecCodeRequest.Builder()
+                    .setCode("Hello")
+                        .setWidth(10)
+                        .setCorrectionlevel(3)
+                        .setInputtype(FormsAztecCodeRequest.FormsAztecCodeInputType.ascii)
+                    .build())
+                .build()
+            )
+            .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
 }
