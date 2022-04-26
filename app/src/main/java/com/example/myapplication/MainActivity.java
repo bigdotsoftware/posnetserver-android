@@ -15,12 +15,18 @@ import java.util.concurrent.ExecutionException;
 import eu.bigdotsoftware.posnetserver.CancelRequest;
 import eu.bigdotsoftware.posnetserver.FormsAztecCodeRequest;
 import eu.bigdotsoftware.posnetserver.FormsBarcodeRequest;
+import eu.bigdotsoftware.posnetserver.FormsDmCodeRequest;
+import eu.bigdotsoftware.posnetserver.FormsPdf417CodeRequest;
+import eu.bigdotsoftware.posnetserver.FormsQrCodeRequest;
 import eu.bigdotsoftware.posnetserver.LicenseInfo;
 import eu.bigdotsoftware.posnetserver.LicenseRegistrationInfo;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaFooter;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaLine;
 import eu.bigdotsoftware.posnetserver.ParagonRequest;
 import eu.bigdotsoftware.posnetserver.ParagonResponse;
+import eu.bigdotsoftware.posnetserver.ParagonTaxIdInfo;
+import eu.bigdotsoftware.posnetserver.PaymentObject;
+import eu.bigdotsoftware.posnetserver.PaymentObjectBuilder;
 import eu.bigdotsoftware.posnetserver.PosnetException;
 import eu.bigdotsoftware.posnetserver.PosnetRequest;
 import eu.bigdotsoftware.posnetserver.PosnetResponse;
@@ -188,6 +194,27 @@ public class MainActivity extends AppCompatActivity {
                 .build()
             )
             .setTotal(300)
+            .setPaymentFormsTotal(300)
+            //.setTaxIdInfo(ParagonTaxIdInfo.Builder()
+            //    .setTaxId("5558889944")
+            //    .setHighlighted(false)
+            //    .setDescription("Hello")
+            //    .build()
+            //)
+            .addPayment(PaymentObject.Builder()
+                .setType(0)
+                .setValue(150)
+                .setName("By cash")
+                .setRest(false)
+                .build()
+            )
+            .addPayment(PaymentObject.Builder()
+                    .setType(2)
+                    .setValue(150)
+                    .setName("By VISA card")
+                    .setRest(false)
+                    .build()
+            )
             .setFooter(ParagonFakturaFooter.Builder()
                 .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
                 .setCashier("Jan Kowalski")
@@ -196,12 +223,32 @@ public class MainActivity extends AppCompatActivity {
                 //.setBarcode(FormsBarcodeRequest.Builder()
                 //    .setCode("Hello")
                 //    .build())
-                .setBarcode(FormsAztecCodeRequest.Builder()
+                //.setBarcode(FormsAztecCodeRequest.Builder()
+                //    .setCode("Hello")
+                //    .setWidth(10)
+                //    .setCorrectionlevel(3)
+                //    .setInputtype(FormsAztecCodeRequest.FormsAztecCodeInputType.ascii)
+                //    .build())
+                .setBarcode(FormsDmCodeRequest.Builder()
                     .setCode("Hello")
-                        .setWidth(10)
-                        .setCorrectionlevel(3)
-                        .setInputtype(FormsAztecCodeRequest.FormsAztecCodeInputType.ascii)
+                    .setWidth(10)
+                    .setInputtype(FormsDmCodeRequest.FormsDmCodeInputType.ascii)
                     .build())
+                //.setBarcode(FormsQrCodeRequest.Builder()
+                //    .setCode("Hello")
+                //    .setWidth(10)
+                //    .setCorrectionlevel(3)
+                //    .setInputtype(FormsQrCodeRequest.FormsQrCodeInputType.ascii)
+                //    .build())
+                //.setBarcode(FormsPdf417CodeRequest.Builder()
+                //    .setCode("Hello")
+                //    .setWidth(2)
+                //    .setCorrectionlevel(3)
+                //    .setProportion(3)
+                //    .setColumns(1)
+                //    .setVertical(false)
+                //    .setInputtype(FormsPdf417CodeRequest.FormsPdf417CodeInputType.ascii)
+                //    .build())
                 .build()
             )
             .build();
