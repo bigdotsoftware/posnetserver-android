@@ -62,6 +62,8 @@ ParagonRequest paragon = ParagonRequest.Builder()
 
 m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
 ```
+![posnetserver-android](https://github.com/bigdotsoftware/posnetserver-android/raw/master/img/print1.jpg)
+
 Note that SDK doesn't automatically sum total value and setTotal() must be called explicitly. This is an intentional double-check to prevent accidental input of wrong VAT rate, quantity or price in line positions.
 
 ### With different/mixed payment methods
@@ -100,6 +102,7 @@ ParagonRequest paragon = ParagonRequest.Builder()
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
 ```
+![posnetserver-android](https://github.com/bigdotsoftware/posnetserver-android/raw/master/img/print2.jpg)
 Like previously, when using payments you must explicitly confirm the total using setPaymentFormsTotal() method.
 
 ### Full list of options
@@ -174,7 +177,7 @@ ParagonRequest paragon = ParagonRequest.Builder()
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
 ```
-
+![posnetserver-android](https://github.com/bigdotsoftware/posnetserver-android/raw/master/img/print3.jpg)
 ### Cancel current operation
 ```
 CancelRequest cancelRequest = new CancelRequest();
