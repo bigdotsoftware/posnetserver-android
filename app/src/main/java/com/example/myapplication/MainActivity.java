@@ -135,6 +135,8 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "License file registered: OK");
 
         try {
+            //printFiscalPrintoutSimple1();
+            //printFiscalPrintoutSimple2();
             printFiscalPrintout();
         } catch (PosnetException e) {
             Log.e(TAG, "Posnet exception: " + e.getMessage());
@@ -161,7 +163,65 @@ public class MainActivity extends AppCompatActivity {
         // HeaderSetRequest headerSetRequest = new HeaderSetRequest("My Company", true);
         // posnet.sendRequest(host, port, headerSetRequest);
     }
+    private void printFiscalPrintoutSimple1() throws PosnetException {
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Coca-Cola")
+                        .setVatIndex(0)
+                        .setPrice(550)
+                        .setQuantity(2.0f)
+                        .build())
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Banana")
+                        .setVatIndex(2)
+                        .setPrice(100)
+                        .setQuantity(3.0f)
+                        .build()
+                )
+                .setTotal(1400)
+                .build();
 
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+    private void printFiscalPrintoutSimple2() throws PosnetException {
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Coca-Cola")
+                        .setVatIndex(0)
+                        .setPrice(550)
+                        .setQuantity(2.0f)
+                        .build())
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Banana")
+                        .setVatIndex(2)
+                        .setPrice(100)
+                        .setQuantity(3.0f)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(0)
+                        .setValue(1000)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(2)
+                        .setValue(400)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .setTotal(1400)
+                .setPaymentFormsTotal(1400)
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
     private void printFiscalPrintout() throws PosnetException {
         //---------------------------------------------------------------------------
         //Cancel request if any in progress
