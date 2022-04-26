@@ -20,6 +20,7 @@ import eu.bigdotsoftware.posnetserver.FormsPdf417CodeRequest;
 import eu.bigdotsoftware.posnetserver.FormsQrCodeRequest;
 import eu.bigdotsoftware.posnetserver.LicenseInfo;
 import eu.bigdotsoftware.posnetserver.LicenseRegistrationInfo;
+import eu.bigdotsoftware.posnetserver.ParagonFakturaExtraLine;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaFooter;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaLine;
 import eu.bigdotsoftware.posnetserver.ParagonRequest;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         m_host = "192.168.0.68";
         m_port = 12346;
         m_posnetServerAndroid = new PosnetServerAndroid();
+        m_posnetServerAndroid.setReadTimeout(6000L);
         m_posnetServerAndroid.setProcessListener(new ProcessWatcher() {
             @Override
             public void onStart(PosnetRequest request) {
@@ -209,17 +211,29 @@ public class MainActivity extends AppCompatActivity {
                 .build()
             )
             .addPayment(PaymentObject.Builder()
-                    .setType(2)
-                    .setValue(150)
-                    .setName("By VISA card")
-                    .setRest(false)
-                    .build()
+                .setType(2)
+                .setValue(150)
+                .setName("By VISA card")
+                .setRest(false)
+                .build()
             )
+            .addExtraLine(ParagonFakturaExtraLine.Builder()
+                .setText("Sample line #1")
+                .setDoubleHeight(true)
+                .setDoubleWidth(true)
+                .setIdent(1)
+                .build())
+            .addExtraLine(ParagonFakturaExtraLine.Builder()
+                .setText("Sample line #2")
+                .setDoubleHeight(false)
+                .setDoubleWidth(false)
+                .setIdent(5)
+                .build())
             .setFooter(ParagonFakturaFooter.Builder()
                 .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
                 .setCashier("Jan Kowalski")
-                .setSystemnumber("ABC1234")
-                .setCashregisternumber("Kasa 5")
+                .setSystemNumber("ABC1234")
+                .setCashregisterNumber("Kasa 5")
                 //.setBarcode(FormsBarcodeRequest.Builder()
                 //    .setCode("Hello")
                 //    .build())
