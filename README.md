@@ -5,7 +5,7 @@ PosnetServer is a product of Big Dot Software. Product is distributed in two ver
  - RESTful API (download from here: https://bigdotsoftware.pl/posnetserver-restful-service-dla-drukarek-posnet/)
  - Android SDK
 
-Android SDK doesn’t use RESTful API - it communicates directly with Posnet printer using Eth connection. 
+Android SDK doesn’t use RESTful API - it communicates directly with Posnet printer using Eth connection. RESTful API has a wider list of features than the current version of Android SDK, but we constantly work on full alignment of both of them. When you need a feature in the Android SDK which is not available yet, please contact us.
 
 
 ### SDK initialization
