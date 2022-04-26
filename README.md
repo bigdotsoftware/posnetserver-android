@@ -1,6 +1,6 @@
 ## PosnetServer for Android
 
-### Object initilaization
+### SDK initialization
 
 ```
     m_posnetServerAndroid = new PosnetServerAndroid();
