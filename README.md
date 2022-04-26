@@ -54,8 +54,7 @@ ParagonRequest paragon = ParagonRequest.Builder()
 
 m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
 ```
-Note that SDK doesn't automatically sum total value and setTotal() must be called explicitely. 
-This is intentional double-check to prevent from accidental input of wrong VAT rate, quantity or price in line positions.
+Note that SDK doesn't automatically sum total value and setTotal() must be called explicitly. This is an intentional double-check to prevent accidental input of wrong VAT rate, quantity or price in line positions.
 
 ### With different/mixed payment methods
 ```
@@ -93,7 +92,7 @@ ParagonRequest paragon = ParagonRequest.Builder()
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
 ```
-Like previously, when using payments you must explicitely confirm the total using setPaymentFormsTotal() method.
+Like previously, when using payments you must explicitly confirm the total using setPaymentFormsTotal() method.
 
 ### Full list of options
 
