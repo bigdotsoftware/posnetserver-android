@@ -103,6 +103,7 @@ ParagonRequest paragon = ParagonRequest.Builder()
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
 ```
 ![posnetserver-android](https://github.com/bigdotsoftware/posnetserver-android/raw/master/img/print2.png)
+
 Like previously, when using payments you must explicitly confirm the total using setPaymentFormsTotal() method.
 
 ### Full list of options
