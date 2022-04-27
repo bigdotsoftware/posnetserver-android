@@ -214,6 +214,7 @@ InvoiceRequest invoice = InvoiceRequest.Builder()
 
  m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
 ```
+![posnetserver-android](https://github.com/bigdotsoftware/posnetserver-android/raw/master/img/print-fv1.png)
 
 ### Full list of options
 ```
@@ -287,3 +288,4 @@ InvoiceRequest invoice = InvoiceRequest.Builder()
 
 m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
 ```
+![posnetserver-android](https://github.com/bigdotsoftware/posnetserver-android/raw/master/img/print-fv2.png)
