@@ -41,7 +41,7 @@ Android SDK doesn’t use RESTful API - it communicates directly with Posnet pri
 ```
 
 
-### Simple fiscal printout
+### Simple fiscal printout (pol. Paragon fiskalny)
 ```
 ParagonRequest paragon = ParagonRequest.Builder()
         .addLine(ParagonFakturaLine.Builder()
@@ -66,7 +66,7 @@ m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
 
 Note that SDK doesn't automatically sum total value and setTotal() must be called explicitly. This is an intentional double-check to prevent accidental input of wrong VAT rate, quantity or price in line positions.
 
-### With different/mixed payment methods
+### With different/mixed payment methods (pol. Paragon fiskalny z typami płatności)
 ```
 ParagonRequest paragon = ParagonRequest.Builder()
                 .addLine(ParagonFakturaLine.Builder()
@@ -183,4 +183,107 @@ ParagonRequest paragon = ParagonRequest.Builder()
 ```
 CancelRequest cancelRequest = new CancelRequest();
 m_posnetServerAndroid.sendRequest(m_host, m_port, cancelRequest);
+```
+
+### Simple invoice (pol. Faktura VAT)
+```
+InvoiceRequest invoice = InvoiceRequest.Builder()
+         .addLine(ParagonFakturaLine.Builder()
+                 .setName("Coca-Cola")
+                 .setVatIndex(0)
+                 .setPrice(550)
+                 .setQuantity(2.0f)
+                 .build())
+         .addLine(ParagonFakturaLine.Builder()
+                 .setName("Banana")
+                 .setVatIndex(2)
+                 .setPrice(100)
+                 .setQuantity(3.0f)
+                 .build()
+         )
+         .setHeader(FakturaTaxIdInfo.Builder()
+                 .setNumber("56/2020")
+                 .setTaxId("584-222-98-89")
+                 .setBuyerName(new ArrayList<>(Arrays.asList("Nazwa firmy", "ul. Miejska 56", "88-888 Miasto")))
+                 .setPaymentDate("2020-02-15")
+                 .setPaymentForm("electronic transfer")
+                 .build()
+         )
+         .setTotal(1400)
+         .build();
+
+ m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
+```
+
+### Full list of options
+```
+InvoiceRequest invoice = InvoiceRequest.Builder()
+        .addLine(ParagonFakturaLine.Builder()
+                .setName("Coca-Cola")
+                .setVatIndex(0)
+                .setPrice(550)
+                .setQuantity(2.0f)
+                .build())
+        .addLine(ParagonFakturaLine.Builder()
+                .setName("Banana")
+                .setVatIndex(2)
+                .setPrice(100)
+                .setQuantity(3.0f)
+                .build()
+        )
+        .addExtraLine("")
+        .addExtraLine("+---------+")
+        .addExtraLine("|   \\O/   |")
+        .addExtraLine("|    W    |")
+        .addExtraLine("|   / \\   |")
+        .addExtraLine("+---------+")
+        //.addExtraLine1("Pole dodatkowe pod datą #1")          //WARNING! Some devices may not support it
+        //.addExtraLine1("Pole dodatkowe pod datą #2")          //WARNING! Some devices may not support it
+        //.addExtraLine2("Pole dodatkowe pod kwotą #1")         //WARNING! Some devices may not support it
+        //.addExtraLine2("Pole dodatkowe pod kwotą #2")         //WARNING! Some devices may not support it
+        //.addExtraLine3("Pole dodatkowe #1", "top")            //WARNING! Some devices may not support it
+        //.addExtraLine3("Pole dodatkowe #2", "bottom")         //WARNING! Some devices may not support it
+        //.addExtraLine3("Pole dodatkowe #3", "middle")         //WARNING! Some devices may not support it
+        .setHeader(FakturaTaxIdInfo.Builder()
+                .setNumber("56/2020")
+                .setTaxId("584-222-98-89")
+                .setBuyerName(new ArrayList<>(Arrays.asList("Nazwa firmy", "ul. Miejska 56", "88-888 Miasto")))
+                .setPaymentDate("2020-02-15")
+                .setPaymentForm("electronic transfer")
+                .setClientName("Kowalski Jan")
+                .setSellerName("Nowak Tomasz")
+                .setCopies(0)
+                .setIssuingCollectingPersonsFlag(true)
+                .setFormat(0)
+                .setOriginalCopyHeadline(true)
+                .setPrintCopy(true)
+                .build()
+        )
+        .setHeaderEx(FakturaHeaderExInfo.Builder()
+                .setCarPlateNumber("WX 12345")
+                .setOrderNumber("45/25/2000358")
+                .setOrderPerson("Mike")
+                .setClientOrderNumber("789/75CGX")
+                .setClientIdent("DX12")
+                .setDeliveryConditions("Kolejny dzień roboczy")
+                .setDeliveryType("Kurier")
+                .build()
+        )
+        .setFooter(ParagonFakturaFooter.Builder()
+                .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                .setCashier("Jan Kowalski")
+                .setSystemNumber("ABC1234")
+                .setCashregisterNumber("Kasa 5")
+                .setBarcode(FormsQrCodeRequest.Builder()
+                        .setCode("Hello")
+                        .setWidth(10)
+                        .setCorrectionlevel(3)
+                        .setInputtype(FormsQrCodeRequest.FormsQrCodeInputType.ascii)
+                        .build())
+                .build()
+        )
+        .setTotal(1400)
+        .build();
+
+m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
 ```
