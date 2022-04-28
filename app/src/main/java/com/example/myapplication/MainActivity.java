@@ -10,8 +10,12 @@ import android.widget.TextView;
 import com.example.myapplication.databinding.ActivityMainBinding;
 
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import eu.bigdotsoftware.posnetserver.AssetHelper;
@@ -54,6 +58,9 @@ import eu.bigdotsoftware.posnetserver.PosnetRequest;
 import eu.bigdotsoftware.posnetserver.PosnetResponse;
 import eu.bigdotsoftware.posnetserver.PosnetServerAndroid;
 import eu.bigdotsoftware.posnetserver.ProcessWatcher;
+import eu.bigdotsoftware.posnetserver.ReportEndOfDayRequest;
+import eu.bigdotsoftware.posnetserver.ReportEndOfMonthRequest;
+import eu.bigdotsoftware.posnetserver.ReportPeriodicRequest;
 import eu.bigdotsoftware.posnetserver.StatusLicznikowResponse;
 import eu.bigdotsoftware.posnetserver.VatRate;
 import eu.bigdotsoftware.posnetserver.VatRatesGetResponse;
@@ -185,38 +192,49 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "License file registered: OK");
 
         try {
-            //printFiscalPrintoutSimple1();
-            //printFiscalPrintoutSimple2();
+            // printFiscalPrintoutSimple1();
+            // printFiscalPrintoutSimple2();
             printFiscalPrintout();
-            //printInvoiceSimple1();
-            //printInvoice();
+            // printInvoiceSimple1();
+            // printInvoice();
+            // printInvoiceOnline();
+            // printBarcodes();
 
-            //printInvoiceOnline();
-            //printBarcodes();
+            // VatRatesGetRequest vatRatesGetRequest = new VatRatesGetRequest();
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, vatRatesGetRequest);
+
+            // StatusLicznikowRequest statusLicznikowRequest = new StatusLicznikowRequest();
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, statusLicznikowRequest);
+
+            // VatRatesSetRequest vatRatesSetRequest = new VatRatesSetRequest();
+            // vatRatesSetRequest.setRate(0,"A", "23");
+            // vatRatesSetRequest.setRate(1,"B", "8");
+            // vatRatesSetRequest.setRate(2,"C", "0");
+            // vatRatesSetRequest.setRate(3,"D", "3");
+            // vatRatesSetRequest.setRate(4,"G", "100");
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, vatRatesSetRequest);
+
+            // MaintenanceRequest maintenanceRequest = new MaintenanceRequest("2022-11-01");
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, maintenanceRequest);
+
+            // HeaderSetRequest headerSetRequest = new HeaderSetRequest("My Company", true);
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, headerSetRequest);
+
+            // Date currentTime = Calendar.getInstance().getTime();
+            // SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            // ReportEndOfDayRequest reportEndOfDayRequest = new ReportEndOfDayRequest(sdf.format(currentTime));
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfDayRequest);
+
+            // ReportEndOfMonthRequest reportEndOfMonthRequest = new ReportEndOfMonthRequest(sdf.format(currentTime), false);
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfMonthRequest);
+
+            // ReportPeriodicRequest reportPeriodicRequest = new ReportPeriodicRequest("2022-01-01", "2022-01-31", false);
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, reportPeriodicRequest);
+
         } catch (PosnetException e) {
             Log.e(TAG, "Posnet exception: " + e.getMessage());
         }
-
-
-        // VatRatesGetRequest vatRatesGetRequest = new VatRatesGetRequest();
-        // posnet.sendRequest(host, port, vatRatesGetRequest);
-
-        // StatusLicznikowRequest statusLicznikowRequest = new StatusLicznikowRequest();
-        // posnet.sendRequest(host, port, statusLicznikowRequest);
-
-        // VatRatesSetRequest vatRatesSetRequest = new VatRatesSetRequest();
-        // vatRatesSetRequest.setRate(0,"A", "23");
-        // vatRatesSetRequest.setRate(1,"B", "8");
-        // vatRatesSetRequest.setRate(2,"C", "0");
-        // vatRatesSetRequest.setRate(3,"D", "3");
-        // vatRatesSetRequest.setRate(4,"G", "100");
-        // posnet.sendRequest(host, port, vatRatesSetRequest);
-
-        // MaintenanceRequest maintenanceRequest = new MaintenanceRequest("2022-11-01");
-        // posnet.sendRequest(host, port, maintenanceRequest);
-
-        // HeaderSetRequest headerSetRequest = new HeaderSetRequest("My Company", true);
-        // posnet.sendRequest(host, port, headerSetRequest);
     }
 
     private void printBarcodes() throws PosnetException {
