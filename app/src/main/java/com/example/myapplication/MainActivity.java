@@ -14,14 +14,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
+import eu.bigdotsoftware.posnetserver.AssetHelper;
 import eu.bigdotsoftware.posnetserver.CancelRequest;
 import eu.bigdotsoftware.posnetserver.FakturaHeaderExInfo;
+import eu.bigdotsoftware.posnetserver.FakturaOnlineTaxIdInfo;
 import eu.bigdotsoftware.posnetserver.FakturaTaxIdInfo;
+import eu.bigdotsoftware.posnetserver.FormFooter;
+import eu.bigdotsoftware.posnetserver.FormHeader;
+import eu.bigdotsoftware.posnetserver.FormsAztecCode;
 import eu.bigdotsoftware.posnetserver.FormsAztecCodeRequest;
+import eu.bigdotsoftware.posnetserver.FormsAztecCodeResponse;
 import eu.bigdotsoftware.posnetserver.FormsBarcodeRequest;
+import eu.bigdotsoftware.posnetserver.FormsBarcodeResponse;
+import eu.bigdotsoftware.posnetserver.FormsDmCode;
 import eu.bigdotsoftware.posnetserver.FormsDmCodeRequest;
+import eu.bigdotsoftware.posnetserver.FormsDmCodeResponse;
+import eu.bigdotsoftware.posnetserver.FormsPdf417Code;
 import eu.bigdotsoftware.posnetserver.FormsPdf417CodeRequest;
+import eu.bigdotsoftware.posnetserver.FormsPdf417CodeResponse;
+import eu.bigdotsoftware.posnetserver.FormsQrCode;
 import eu.bigdotsoftware.posnetserver.FormsQrCodeRequest;
+import eu.bigdotsoftware.posnetserver.FormsQrCodeResponse;
+import eu.bigdotsoftware.posnetserver.InvoiceOnlineRequest;
+import eu.bigdotsoftware.posnetserver.InvoiceOnlineResponse;
 import eu.bigdotsoftware.posnetserver.InvoiceRequest;
 import eu.bigdotsoftware.posnetserver.InvoiceResponse;
 import eu.bigdotsoftware.posnetserver.LicenseInfo;
@@ -89,6 +104,24 @@ public class MainActivity extends AppCompatActivity {
                 }else if( response instanceof InvoiceResponse) {
                     InvoiceResponse result = (InvoiceResponse)response;
                     Log.i(TAG, String.format("InvoiceResponse [%s]", result.toString()));
+                }else if( response instanceof InvoiceOnlineResponse) {
+                    InvoiceOnlineResponse result = (InvoiceOnlineResponse) response;
+                    Log.i(TAG, String.format("InvoiceOnlineResponse [%s]", result.toString()));
+                }else if(response instanceof FormsBarcodeResponse) {
+                    FormsBarcodeResponse result = (FormsBarcodeResponse) response;
+                    Log.i(TAG, String.format("FormsBarcodeResponse [%s]", result.toString()));
+                }else if(response instanceof FormsAztecCodeResponse) {
+                    FormsAztecCodeResponse result = (FormsAztecCodeResponse) response;
+                    Log.i(TAG, String.format("FormsAztecCodeResponse [%s]", result.toString()));
+                }else if(response instanceof FormsDmCodeResponse) {
+                    FormsDmCodeResponse result = (FormsDmCodeResponse) response;
+                    Log.i(TAG, String.format("FormsDmCodeResponse [%s]", result.toString()));
+                }else if(response instanceof FormsQrCodeResponse) {
+                    FormsQrCodeResponse result = (FormsQrCodeResponse) response;
+                    Log.i(TAG, String.format("FormsQrCodeResponse [%s]", result.toString()));
+                }else if(response instanceof FormsPdf417CodeResponse) {
+                    FormsPdf417CodeResponse result = (FormsPdf417CodeResponse) response;
+                    Log.i(TAG, String.format("FormsPdf417CodeResponse [%s]", result.toString()));
                 }else if (response instanceof VatRatesGetResponse) {
                     VatRatesGetResponse result = (VatRatesGetResponse)response;
                     for(VatRate vatRate : result.getRates()) {
@@ -137,7 +170,15 @@ public class MainActivity extends AppCompatActivity {
         for(int i=0;i<info.getExtrasCount();i++)
             Log.i(TAG, "License details | " + info.getExtras(i));
 
-        LicenseRegistrationInfo licenseRegistrationInfo = m_posnetServerAndroid.registerLicenseFile(this, "Test.lic");
+
+        //---------------------------------------------------------------------------
+        //Register license file
+        //using file name from assets registerLicenseFile(name)
+        //LicenseRegistrationInfo licenseRegistrationInfo = m_posnetServerAndroid.registerLicenseFile(this, "Test.lic", Arrays.asList(m_host+":"+m_port));
+        //alternatively using registerLicenseFile(bytes[])
+        byte[] licbytes = AssetHelper.readAssetContent(this, "Test.lic");
+        LicenseRegistrationInfo licenseRegistrationInfo = m_posnetServerAndroid.registerLicenseFile(this, licbytes, Arrays.asList(m_host+":"+m_port));
+
         if( !licenseRegistrationInfo.isOk())
             Log.e(TAG, "Cannot register license file: " + licenseRegistrationInfo.getError());
         else
@@ -146,9 +187,12 @@ public class MainActivity extends AppCompatActivity {
         try {
             //printFiscalPrintoutSimple1();
             //printFiscalPrintoutSimple2();
-            //printFiscalPrintout();
+            printFiscalPrintout();
             //printInvoiceSimple1();
-            printInvoice();
+            //printInvoice();
+
+            //printInvoiceOnline();
+            //printBarcodes();
         } catch (PosnetException e) {
             Log.e(TAG, "Posnet exception: " + e.getMessage());
         }
@@ -175,6 +219,103 @@ public class MainActivity extends AppCompatActivity {
         // posnet.sendRequest(host, port, headerSetRequest);
     }
 
+    private void printBarcodes() throws PosnetException {
+
+        FormsBarcodeRequest formsBarcodeRequest = FormsBarcodeRequest.Builder()
+                .setCode("Hello")
+                .setHeader(new FormHeader(FormHeader.FormHeaderType.DOKUMENT_NIEFISKALNY))
+                .setFooter(FormFooter.Builder()
+                        .setAction(FormFooter.FormFooterAction.cut_move)
+                        .setCashier("Kowalski")
+                        .setCashregisterNumber("ABCD")
+                        .setSystemNumber("SSS12345")
+                        .build())
+                .addExtraLine(" ")
+                .addExtraLine("   \\O/   ")
+                .addExtraLine("    W    ")
+                .addExtraLine("   / \\   ")
+                .build();
+        m_posnetServerAndroid.sendRequest(m_host, m_port, formsBarcodeRequest);
+
+        FormsAztecCodeRequest formsAztecCodeRequest = FormsAztecCodeRequest.Builder()
+                .setCode("Hello")
+                .setWidth(10)
+                .setCorrectionLevel(3)
+                .setInputType(FormsAztecCode.FormsAztecCodeInputType.ascii)
+                .setHeader(new FormHeader(FormHeader.FormHeaderType.DOKUMENT_NIEFISKALNY))
+                .setFooter(FormFooter.Builder()
+                        .setAction(FormFooter.FormFooterAction.cut_move)
+                        .setCashier("Kowalski")
+                        .setCashregisterNumber("ABCD")
+                        .setSystemNumber("SSS12345")
+                        .build())
+                .addExtraLine(" ")
+                .addExtraLine("   \\O/   ")
+                .addExtraLine("    W    ")
+                .addExtraLine("   / \\   ")
+            .build();
+        m_posnetServerAndroid.sendRequest(m_host, m_port, formsAztecCodeRequest);
+
+        FormsQrCodeRequest formsQrCodeRequest = FormsQrCodeRequest.Builder()
+                .setCode("Hello")
+                .setWidth(10)
+                .setCorrectionLevel(3)
+                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                .setHeader(new FormHeader(FormHeader.FormHeaderType.DOKUMENT_NIEFISKALNY))
+                .setFooter(FormFooter.Builder()
+                        .setAction(FormFooter.FormFooterAction.cut_move)
+                        .setCashier("Kowalski")
+                        .setCashregisterNumber("ABCD")
+                        .setSystemNumber("SSS12345")
+                        .build())
+                .addExtraLine(" ")
+                .addExtraLine("   \\O/   ")
+                .addExtraLine("    W    ")
+                .addExtraLine("   / \\   ")
+                .build();
+        m_posnetServerAndroid.sendRequest(m_host, m_port, formsQrCodeRequest);
+
+        FormsDmCodeRequest formsDmCodeRequest = FormsDmCodeRequest.Builder()
+                .setCode("Hello")
+                .setWidth(10)
+                .setInputType(FormsDmCode.FormsDmCodeInputType.ascii)
+                .setHeader(new FormHeader(FormHeader.FormHeaderType.DOKUMENT_NIEFISKALNY))
+                .setFooter(FormFooter.Builder()
+                        .setAction(FormFooter.FormFooterAction.cut_move)
+                        .setCashier("Kowalski")
+                        .setCashregisterNumber("ABCD")
+                        .setSystemNumber("SSS12345")
+                        .build())
+                .addExtraLine(" ")
+                .addExtraLine("   \\O/   ")
+                .addExtraLine("    W    ")
+                .addExtraLine("   / \\   ")
+                .build();
+        m_posnetServerAndroid.sendRequest(m_host, m_port, formsDmCodeRequest);
+
+        FormsPdf417CodeRequest formsPdf417CodeRequest = FormsPdf417CodeRequest.Builder()
+                .setCode("Hello")
+                .setWidth(2)
+                .setCorrectionLevel(3)
+                .setProportion(3)
+                .setColumns(1)
+                .setVertical(false)
+                .setInputType(FormsPdf417Code.FormsPdf417CodeInputType.ascii)
+                .setHeader(new FormHeader(FormHeader.FormHeaderType.DOKUMENT_NIEFISKALNY))
+                .setFooter(FormFooter.Builder()
+                        .setAction(FormFooter.FormFooterAction.cut_move)
+                        .setCashier("Kowalski")
+                        .setCashregisterNumber("ABCD")
+                        .setSystemNumber("SSS12345")
+                        .build())
+                .addExtraLine(" ")
+                .addExtraLine("   \\O/   ")
+                .addExtraLine("    W    ")
+                .addExtraLine("   / \\   ")
+                .build();
+        m_posnetServerAndroid.sendRequest(m_host, m_port, formsPdf417CodeRequest);
+
+    }
     private void printInvoiceSimple1() throws PosnetException {
         InvoiceRequest invoice = InvoiceRequest.Builder()
                 .addLine(ParagonFakturaLine.Builder()
@@ -203,6 +344,7 @@ public class MainActivity extends AppCompatActivity {
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
     }
+
     private void printInvoice() throws PosnetException {
         InvoiceRequest invoice = InvoiceRequest.Builder()
                 .addLine(ParagonFakturaLine.Builder()
@@ -218,7 +360,7 @@ public class MainActivity extends AppCompatActivity {
                         .setQuantity(3.0f)
                         .build()
                 )
-                .addExtraLine("")
+                .addExtraLine(" ")
                 .addExtraLine("+---------+")
                 .addExtraLine("|   \\O/   |")
                 .addExtraLine("|    W    |")
@@ -261,11 +403,11 @@ public class MainActivity extends AppCompatActivity {
                         .setCashier("Jan Kowalski")
                         .setSystemNumber("ABC1234")
                         .setCashregisterNumber("Kasa 5")
-                        .setBarcode(FormsQrCodeRequest.Builder()
+                        .setBarcode(FormsQrCode.Builder()
                                 .setCode("Hello")
                                 .setWidth(10)
-                                .setCorrectionlevel(3)
-                                .setInputtype(FormsQrCodeRequest.FormsQrCodeInputType.ascii)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
                                 .build())
                         .build()
                 )
@@ -274,6 +416,85 @@ public class MainActivity extends AppCompatActivity {
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
     }
+
+    private void printInvoiceOnline() throws PosnetException {
+        InvoiceOnlineRequest invoice = InvoiceOnlineRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Coca-Cola")
+                        .setVatIndex(0)
+                        .setPrice(550)
+                        .setQuantity(2.0f)
+                        .build())
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Banana")
+                        .setVatIndex(2)
+                        .setPrice(100)
+                        .setQuantity(3.0f)
+                        .build()
+                )
+                .addExtraLine3("Pole dodatkowe #1", "top")
+                .addExtraLine3("Pole dodatkowe #2", "bottom")
+                .addExtraLine3("Pole dodatkowe #3", "middle")
+                .setHeader(FakturaOnlineTaxIdInfo.Builder()
+                        .setInvoiceName("Nazwa Faktury")
+                        .setCopies(0)
+                        .setOriginalCopyHeadline(true)
+                        .setLineWidth(40)
+                        .setFiscalLineWidth(40)
+                        .setBuyerName(new ArrayList<>(Arrays.asList("Nazwa firmy")))
+                        .setTaxId("584-222-98-89")
+                        .setBuyerAddress(new ArrayList<>(Arrays.asList("ul. Miejska 56", "88-888 Miasto")))
+                        .setBuyerSection(0)
+                        .setBuyerAttributes(0)
+                        .setNumber("56/2020")
+                        .setInvoiceNumberSection(0)
+                        .setInvoiceNumberAttributes(0)
+                        .build()
+                )
+                .setHeaderEx(FakturaHeaderExInfo.Builder()
+                        .setCarPlateNumber("WX 12345")
+                        .setOrderNumber("45/25/2000358")
+                        .setOrderPerson("Mike")
+                        .setClientOrderNumber("789/75CGX")
+                        .setClientIdent("DX12")
+                        .setDeliveryConditions("Kolejny dzień roboczy")
+                        .setDeliveryType("Kurier")
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(0)
+                        .setValue(1000)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(2)
+                        .setValue(400)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        .build()
+                )
+                .setTotal(1400)
+                .setPaymentFormsTotal(1400)
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
+    }
+
     private void printFiscalPrintoutSimple1() throws PosnetException {
         //---------------------------------------------------------------------------
         //Print
@@ -296,6 +517,7 @@ public class MainActivity extends AppCompatActivity {
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
     }
+
     private void printFiscalPrintoutSimple2() throws PosnetException {
         //---------------------------------------------------------------------------
         //Print
@@ -333,6 +555,7 @@ public class MainActivity extends AppCompatActivity {
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
     }
+
     private void printFiscalPrintout() throws PosnetException {
         //---------------------------------------------------------------------------
         //Cancel request if any in progress
@@ -405,34 +628,34 @@ public class MainActivity extends AppCompatActivity {
                 .setCashier("Jan Kowalski")
                 .setSystemNumber("ABC1234")
                 .setCashregisterNumber("Kasa 5")
-                //.setBarcode(FormsBarcodeRequest.Builder()
+                //.setBarcode(FormsBarcode.Builder()
                 //    .setCode("Hello")
                 //    .build())
-                //.setBarcode(FormsAztecCodeRequest.Builder()
+                //.setBarcode(FormsAztecCode.Builder()
                 //    .setCode("Hello")
                 //    .setWidth(10)
-                //    .setCorrectionlevel(3)
-                //    .setInputtype(FormsAztecCodeRequest.FormsAztecCodeInputType.ascii)
+                //    .setCorrectionLevel(3)
+                //    .setInputType(FormsAztecCode.FormsAztecCodeInputType.ascii)
                 //    .build())
-                // .setBarcode(FormsDmCodeRequest.Builder()
+                // .setBarcode(FormsDmCode.Builder()
                 //     .setCode("Hello")
                 //     .setWidth(10)
-                //     .setInputtype(FormsDmCodeRequest.FormsDmCodeInputType.ascii)
+                //     .setInputType(FormsDmCode.FormsDmCodeInputType.ascii)
                 //     .build())
-                .setBarcode(FormsQrCodeRequest.Builder()
+                .setBarcode(FormsQrCode.Builder()
                     .setCode("Hello")
                     .setWidth(10)
-                    .setCorrectionlevel(3)
-                    .setInputtype(FormsQrCodeRequest.FormsQrCodeInputType.ascii)
+                    .setCorrectionLevel(3)
+                    .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
                     .build())
-                //.setBarcode(FormsPdf417CodeRequest.Builder()
+                //.setBarcode(FormsPdf417Code.Builder()
                 //    .setCode("Hello")
                 //    .setWidth(2)
-                //    .setCorrectionlevel(3)
+                //    .setCorrectionLevel(3)
                 //    .setProportion(3)
                 //    .setColumns(1)
                 //    .setVertical(false)
-                //    .setInputtype(FormsPdf417CodeRequest.FormsPdf417CodeInputType.ascii)
+                //    .setInputType(FormsPdf417Code.FormsPdf417CodeInputType.ascii)
                 //    .build())
                 .build()
             )
