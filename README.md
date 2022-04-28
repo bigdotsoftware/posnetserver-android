@@ -470,3 +470,34 @@ FormsPdf417CodeRequest formsPdf417CodeRequest = FormsPdf417CodeRequest.Builder()
         .build();
 m_posnetServerAndroid.sendRequest(m_host, m_port, formsPdf417CodeRequest);
 ```
+
+### Device management
+#### VAT rates
+```
+VatRatesGetRequest vatRatesGetRequest = new VatRatesGetRequest();
+m_posnetServerAndroid.sendRequest(host, port, vatRatesGetRequest);
+```
+
+```
+VatRatesSetRequest vatRatesSetRequest = new VatRatesSetRequest();
+vatRatesSetRequest.setRate(0,"A", "23");
+vatRatesSetRequest.setRate(1,"B", "8");
+vatRatesSetRequest.setRate(2,"C", "0");
+vatRatesSetRequest.setRate(3,"D", "3");
+vatRatesSetRequest.setRate(4,"G", "100");
+m_posnetServerAndroid.sendRequest(host, port, vatRatesSetRequest);
+```
+
+#### Header
+```
+HeaderSetRequest headerSetRequest = new HeaderSetRequest("My Company", true);
+m_posnetServerAndroid.sendRequest(host, port, headerSetRequest);
+```
+
+#### Maintenenace date
+```
+MaintenanceRequest maintenanceRequest = new MaintenanceRequest("2022-11-01");
+m_posnetServerAndroid.sendRequest(host, port, maintenanceRequest);
+```
+
+
