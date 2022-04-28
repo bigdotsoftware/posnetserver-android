@@ -471,6 +471,23 @@ FormsPdf417CodeRequest formsPdf417CodeRequest = FormsPdf417CodeRequest.Builder()
 m_posnetServerAndroid.sendRequest(m_host, m_port, formsPdf417CodeRequest);
 ```
 
+### Reports
+#### Daily report (pol. Raport dobowy)
+```
+Date currentTime = Calendar.getInstance().getTime();
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+ReportEndOfDayRequest reportEndOfDayRequest = new ReportEndOfDayRequest(sdf.format(currentTime));
+m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfDayRequest);
+```
+#### Monthly report (pol. Raport miesięczny)
+```
+Date currentTime = Calendar.getInstance().getTime();
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+ReportEndOfMonthRequest reportEndOfMonthRequest = new ReportEndOfMonthRequest(sdf.format(currentTime), false);
+m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfMonthRequest);
+```
+
+
 ### Device management
 #### VAT rates
 ```
