@@ -487,6 +487,11 @@ ReportEndOfMonthRequest reportEndOfMonthRequest = new ReportEndOfMonthRequest(sd
 m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfMonthRequest);
 ```
 
+#### Periodic report (pol. Raport okresowy)
+```
+ReportPeriodicRequest reportPeriodicRequest = new ReportPeriodicRequest("2022-01-01", "2022-01-31", false);
+m_posnetServerAndroid.sendRequest(m_host, m_port, reportPeriodicRequest);
+```
 
 ### Device management
 #### VAT rates
