@@ -493,6 +493,55 @@ ReportPeriodicRequest reportPeriodicRequest = new ReportPeriodicRequest("2022-01
 m_posnetServerAndroid.sendRequest(m_host, m_port, reportPeriodicRequest);
 ```
 
+#### Custom report
+```
+ReportCustomRequest reportCustomRequest = ReportCustomRequest.Builder()
+        .setHeader(new FormHeader(FormHeader.FormHeaderType.BON_RABATOWY))
+        .addLine(FormsLine.Builder()
+                .setType(0)
+                .addParams("0")
+                .addParams("123")
+                .addParams("123")
+                .addParams("123")
+                .build())
+        .addLine(FormsLine.Builder()
+                .setType(1)
+                .addParams("#################################")
+                .build())
+        .addLine(FormsLine.Builder()
+                .setType(2)
+                .addParams("Kowalski")
+                .build())
+        .addLine(FormsLine.Builder()
+                .setType(3)
+                .addParams("TOWAR 1")
+                .addParams("7777")
+                .build())
+        .addLine(FormsLine.Builder()
+                .setType(3)
+                .addParams("TOWAR 2")
+                .addParams("1111")
+                .build())
+        .addLine(FormsLine.Builder()
+                .setType(4)
+                .addParams("8888")
+                .build())
+        .addLine(FormsLine.Builder()
+                .setType(5)
+                .addParams("X")
+                .addParams("ABCD1234")
+                .build())
+        .addLine(FormsLine.Builder()
+                .setType(6)
+                .build())
+        .addLine(FormsLine.Builder()
+                .setType(7)
+                .addParams("2020-06-01")
+                .build())
+        .build();
+m_posnetServerAndroid.sendRequest(m_host, m_port, reportCustomRequest);
+```
+
 ### Device management
 #### VAT rates
 ```
