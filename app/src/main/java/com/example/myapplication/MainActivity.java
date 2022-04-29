@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 
 import eu.bigdotsoftware.posnetserver.AssetHelper;
 import eu.bigdotsoftware.posnetserver.CancelRequest;
+import eu.bigdotsoftware.posnetserver.CommandRequest;
 import eu.bigdotsoftware.posnetserver.FakturaHeaderExInfo;
 import eu.bigdotsoftware.posnetserver.FakturaOnlineTaxIdInfo;
 import eu.bigdotsoftware.posnetserver.FakturaTaxIdInfo;
@@ -91,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
         m_port = 12346;
         m_posnetServerAndroid = new PosnetServerAndroid();
         m_posnetServerAndroid.setReadTimeout(30000L);
+        m_posnetServerAndroid.setSocketTimeout(30000L);
         m_posnetServerAndroid.setProcessListener(new ProcessWatcher() {
             @Override
             public void onStart(PosnetRequest request) {
@@ -233,6 +235,12 @@ public class MainActivity extends AppCompatActivity {
 
             // ReportPeriodicRequest reportPeriodicRequest = new ReportPeriodicRequest("2022-01-01", "2022-01-31", false);
             // m_posnetServerAndroid.sendRequest(m_host, m_port, reportPeriodicRequest);
+
+            // CommandRequest commandRequest = new CommandRequest();
+            // commandRequest.addCommand("shiftrep", "sh,pierwsza" );
+            // commandRequest.addCommand("login", "na,Kowalski");
+            // commandRequest.addCommand("cash", "kw,30850\nwp,T");
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, commandRequest);
 
             /*
             ReportCustomRequest reportCustomRequest = ReportCustomRequest.Builder()
