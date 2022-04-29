@@ -542,6 +542,8 @@ ReportCustomRequest reportCustomRequest = ReportCustomRequest.Builder()
 m_posnetServerAndroid.sendRequest(m_host, m_port, reportCustomRequest);
 ```
 
+![posnetserver-android](https://github.com/bigdotsoftware/posnetserver-android/raw/master/img/print31.png)
+
 ### Device management
 #### VAT rates
 ```
