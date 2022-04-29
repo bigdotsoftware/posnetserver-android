@@ -33,6 +33,7 @@ import eu.bigdotsoftware.posnetserver.FormsBarcodeResponse;
 import eu.bigdotsoftware.posnetserver.FormsDmCode;
 import eu.bigdotsoftware.posnetserver.FormsDmCodeRequest;
 import eu.bigdotsoftware.posnetserver.FormsDmCodeResponse;
+import eu.bigdotsoftware.posnetserver.FormsLine;
 import eu.bigdotsoftware.posnetserver.FormsPdf417Code;
 import eu.bigdotsoftware.posnetserver.FormsPdf417CodeRequest;
 import eu.bigdotsoftware.posnetserver.FormsPdf417CodeResponse;
@@ -58,6 +59,7 @@ import eu.bigdotsoftware.posnetserver.PosnetRequest;
 import eu.bigdotsoftware.posnetserver.PosnetResponse;
 import eu.bigdotsoftware.posnetserver.PosnetServerAndroid;
 import eu.bigdotsoftware.posnetserver.ProcessWatcher;
+import eu.bigdotsoftware.posnetserver.ReportCustomRequest;
 import eu.bigdotsoftware.posnetserver.ReportEndOfDayRequest;
 import eu.bigdotsoftware.posnetserver.ReportEndOfMonthRequest;
 import eu.bigdotsoftware.posnetserver.ReportPeriodicRequest;
@@ -232,6 +234,53 @@ public class MainActivity extends AppCompatActivity {
             // ReportPeriodicRequest reportPeriodicRequest = new ReportPeriodicRequest("2022-01-01", "2022-01-31", false);
             // m_posnetServerAndroid.sendRequest(m_host, m_port, reportPeriodicRequest);
 
+            /*
+            ReportCustomRequest reportCustomRequest = ReportCustomRequest.Builder()
+                    .setHeader(new FormHeader(FormHeader.FormHeaderType.BON_RABATOWY))
+                    .addLine(FormsLine.Builder()
+                            .setType(0)
+                            .addParams("0")
+                            .addParams("123")
+                            .addParams("123")
+                            .addParams("123")
+                            .build())
+                    .addLine(FormsLine.Builder()
+                            .setType(1)
+                            .addParams("#################################")
+                            .build())
+                    .addLine(FormsLine.Builder()
+                            .setType(2)
+                            .addParams("Kowalski")
+                            .build())
+                    .addLine(FormsLine.Builder()
+                            .setType(3)
+                            .addParams("TOWAR 1")
+                            .addParams("7777")
+                            .build())
+                    .addLine(FormsLine.Builder()
+                            .setType(3)
+                            .addParams("TOWAR 2")
+                            .addParams("1111")
+                            .build())
+                    .addLine(FormsLine.Builder()
+                            .setType(4)
+                            .addParams("8888")
+                            .build())
+                    .addLine(FormsLine.Builder()
+                            .setType(5)
+                            .addParams("X")
+                            .addParams("ABCD1234")
+                            .build())
+                    .addLine(FormsLine.Builder()
+                            .setType(6)
+                            .build())
+                    .addLine(FormsLine.Builder()
+                            .setType(7)
+                            .addParams("2020-06-01")
+                            .build())
+                    .build();
+            m_posnetServerAndroid.sendRequest(m_host, m_port, reportCustomRequest);
+            */
         } catch (PosnetException e) {
             Log.e(TAG, "Posnet exception: " + e.getMessage());
         }
