@@ -47,6 +47,8 @@ import eu.bigdotsoftware.posnetserver.InvoiceRequest;
 import eu.bigdotsoftware.posnetserver.InvoiceResponse;
 import eu.bigdotsoftware.posnetserver.LicenseInfo;
 import eu.bigdotsoftware.posnetserver.LicenseRegistrationInfo;
+import eu.bigdotsoftware.posnetserver.LoginRequest;
+import eu.bigdotsoftware.posnetserver.LogoutRequest;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaExtraLine;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaFooter;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaLine;
@@ -64,6 +66,7 @@ import eu.bigdotsoftware.posnetserver.ReportCustomRequest;
 import eu.bigdotsoftware.posnetserver.ReportEndOfDayRequest;
 import eu.bigdotsoftware.posnetserver.ReportEndOfMonthRequest;
 import eu.bigdotsoftware.posnetserver.ReportPeriodicRequest;
+import eu.bigdotsoftware.posnetserver.ReportShiftRequest;
 import eu.bigdotsoftware.posnetserver.StatusLicznikowRequest;
 import eu.bigdotsoftware.posnetserver.StatusLicznikowResponse;
 import eu.bigdotsoftware.posnetserver.StatusTotalizerowRequest;
@@ -242,15 +245,26 @@ public class MainActivity extends AppCompatActivity {
             // ReportEndOfDayRequest reportEndOfDayRequest = new ReportEndOfDayRequest(sdf.format(currentTime));
             // m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfDayRequest);
 
+            // ReportEndOfDayRequest reportEndOfDayRequest = new ReportEndOfDayRequest();
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfDayRequest);
+
             // ReportEndOfMonthRequest reportEndOfMonthRequest = new ReportEndOfMonthRequest(sdf.format(currentTime), false);
             // m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfMonthRequest);
 
             // ReportPeriodicRequest reportPeriodicRequest = new ReportPeriodicRequest("2022-01-01", "2022-01-31", false);
             // m_posnetServerAndroid.sendRequest(m_host, m_port, reportPeriodicRequest);
 
+            // LoginRequest loginRequest = new LoginRequest("Kowalski", "Cash #2", true);
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, loginRequest);
+
+            // LogoutRequest logoutRequest = new LogoutRequest("Kowalski", "Cash #2");
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, logoutRequest);
+
+            // ReportShiftRequest reportShiftRequest = new ReportShiftRequest("Shift #3", true);
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, reportShiftRequest);
+
             // CommandRequest commandRequest = new CommandRequest();
-            // commandRequest.addCommand("shiftrep", "sh,pierwsza" );
-            // commandRequest.addCommand("login", "na,Kowalski");
+            // commandRequest.addCommand("servicerep");
             // commandRequest.addCommand("cash", "kw,30850\nwp,T");
             // m_posnetServerAndroid.sendRequest(m_host, m_port, commandRequest);
 
