@@ -64,7 +64,10 @@ import eu.bigdotsoftware.posnetserver.ReportCustomRequest;
 import eu.bigdotsoftware.posnetserver.ReportEndOfDayRequest;
 import eu.bigdotsoftware.posnetserver.ReportEndOfMonthRequest;
 import eu.bigdotsoftware.posnetserver.ReportPeriodicRequest;
+import eu.bigdotsoftware.posnetserver.StatusLicznikowRequest;
 import eu.bigdotsoftware.posnetserver.StatusLicznikowResponse;
+import eu.bigdotsoftware.posnetserver.StatusTotalizerowRequest;
+import eu.bigdotsoftware.posnetserver.StatusTotalizerowResponse;
 import eu.bigdotsoftware.posnetserver.VatRate;
 import eu.bigdotsoftware.posnetserver.VatRatesGetResponse;
 
@@ -78,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private PosnetServerAndroid m_posnetServerAndroid;
     private String m_host;
     private int m_port;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,7 +145,12 @@ public class MainActivity extends AppCompatActivity {
                 }else if( response instanceof StatusLicznikowResponse) {
                     StatusLicznikowResponse result = (StatusLicznikowResponse)response;
                     Log.i(TAG, String.format("Received Counters [%s]", result.toString()));
+                }else if( response instanceof StatusTotalizerowResponse) {
+                    StatusTotalizerowResponse result = (StatusTotalizerowResponse)response;
+                    Log.i(TAG, String.format("Received Counters [%s]", result.toString()));
                 }
+
+
                 Log.i(TAG, message);
             }
 
@@ -199,6 +208,7 @@ public class MainActivity extends AppCompatActivity {
             // printFiscalPrintoutSimple1();
             // printFiscalPrintoutSimple2();
             printFiscalPrintout();
+            // printFiscalPrintoutWithRest();
             // printInvoiceSimple1();
             // printInvoice();
             // printInvoiceOnline();
@@ -209,6 +219,9 @@ public class MainActivity extends AppCompatActivity {
 
             // StatusLicznikowRequest statusLicznikowRequest = new StatusLicznikowRequest();
             // m_posnetServerAndroid.sendRequest(m_host, m_port, statusLicznikowRequest);
+
+            // StatusTotalizerowRequest statusTotalizerowRequest = new StatusTotalizerowRequest();
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, statusTotalizerowRequest);
 
             // VatRatesSetRequest vatRatesSetRequest = new VatRatesSetRequest();
             // vatRatesSetRequest.setRate(0,"A", "23");
@@ -226,7 +239,6 @@ public class MainActivity extends AppCompatActivity {
 
             // Date currentTime = Calendar.getInstance().getTime();
             // SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
             // ReportEndOfDayRequest reportEndOfDayRequest = new ReportEndOfDayRequest(sdf.format(currentTime));
             // m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfDayRequest);
 
@@ -630,7 +642,36 @@ public class MainActivity extends AppCompatActivity {
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
     }
+    private void printFiscalPrintoutWithRest() throws PosnetException {
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        .setPrice(200)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .setTotal(200)
+                .setRest(300)
+                .setPaymentFormsTotal(500)
+                .addPayment(PaymentObject.Builder()
+                        .setType(2)
+                        .setValue(500)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(0)
+                        .setValue(300)
+                        .setName("By cash")
+                        .setRest(true)
+                        .build()
+                )
+                .build();
 
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
     private void printFiscalPrintout() throws PosnetException {
         //---------------------------------------------------------------------------
         //Cancel request if any in progress
