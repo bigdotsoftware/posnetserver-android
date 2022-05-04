@@ -471,6 +471,18 @@ FormsPdf417CodeRequest formsPdf417CodeRequest = FormsPdf417CodeRequest.Builder()
 m_posnetServerAndroid.sendRequest(m_host, m_port, formsPdf417CodeRequest);
 ```
 
+### Sessions
+#### Cashier login
+```
+LoginRequest loginRequest = new LoginRequest("Kowalski", "Cash #2", true);
+m_posnetServerAndroid.sendRequest(m_host, m_port, loginRequest);
+```
+#### Cashier logout
+```
+LogoutRequest logoutRequest = new LogoutRequest("Kowalski", "Cash #2");
+m_posnetServerAndroid.sendRequest(m_host, m_port, logoutRequest);
+```
+
 ### Reports
 #### Daily report (pol. Raport dobowy)
 ```
@@ -491,6 +503,12 @@ m_posnetServerAndroid.sendRequest(m_host, m_port, reportEndOfMonthRequest);
 ```
 ReportPeriodicRequest reportPeriodicRequest = new ReportPeriodicRequest("2022-01-01", "2022-01-31", false);
 m_posnetServerAndroid.sendRequest(m_host, m_port, reportPeriodicRequest);
+```
+
+#### Shift report (pol. Raport zmianowy)
+```
+ReportShiftRequest reportShiftRequest = new ReportShiftRequest("Shift #3", true);
+m_posnetServerAndroid.sendRequest(m_host, m_port, reportShiftRequest);
 ```
 
 #### Custom report
