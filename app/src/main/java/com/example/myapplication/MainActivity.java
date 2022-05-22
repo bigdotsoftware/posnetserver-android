@@ -93,6 +93,17 @@ public class MainActivity extends AppCompatActivity {
         m_binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(m_binding.getRoot());
 
+        m_binding.buttonPrint.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    printFiscalPrintout();
+                } catch (PosnetException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         //---------------------------------------------------------------------------
         //Initialize
         m_host = "192.168.0.68";
@@ -165,7 +176,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, error);
             }
         });
-
+        //m_posnetServerAndroid.setDebugListener(new DebugWatcher() {
+        //    @Override
+        //    public void onMessage(String message) {
+        //        Log.i(TAG, message);
+        //    }
+        //});
 
 
         InputStream ins = getResources().openRawResource(
@@ -687,8 +703,10 @@ public class MainActivity extends AppCompatActivity {
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
     }
     private void printFiscalPrintout() throws PosnetException {
+
         //---------------------------------------------------------------------------
         //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
         CancelRequest cancelRequest = new CancelRequest();
         try {
             Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
