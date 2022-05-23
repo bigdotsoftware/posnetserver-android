@@ -49,6 +49,7 @@ import eu.bigdotsoftware.posnetserver.LicenseInfo;
 import eu.bigdotsoftware.posnetserver.LicenseRegistrationInfo;
 import eu.bigdotsoftware.posnetserver.LoginRequest;
 import eu.bigdotsoftware.posnetserver.LogoutRequest;
+import eu.bigdotsoftware.posnetserver.MaintenanceRequest;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaExtraLine;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaFooter;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaLine;
@@ -250,8 +251,8 @@ public class MainActivity extends AppCompatActivity {
             // vatRatesSetRequest.setRate(4,"G", "100");
             // m_posnetServerAndroid.sendRequest(m_host, m_port, vatRatesSetRequest);
 
-            // MaintenanceRequest maintenanceRequest = new MaintenanceRequest("2022-11-01");
-            // m_posnetServerAndroid.sendRequest(m_host, m_port, maintenanceRequest);
+            //MaintenanceRequest maintenanceRequest = new MaintenanceRequest("2022-11-01");
+            //m_posnetServerAndroid.sendRequest(m_host, m_port, maintenanceRequest);
 
             // HeaderSetRequest headerSetRequest = new HeaderSetRequest("My Company", true);
             // m_posnetServerAndroid.sendRequest(m_host, m_port, headerSetRequest);
