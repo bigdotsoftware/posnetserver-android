@@ -511,6 +511,18 @@ ReportShiftRequest reportShiftRequest = new ReportShiftRequest("Shift #3", true)
 m_posnetServerAndroid.sendRequest(m_host, m_port, reportShiftRequest);
 ```
 
+#### Cash deposit (pol. Wpłata gotówki) (from version 1.1)
+```
+CashDepositRequest cashDepositRequest = new CashDepositRequest(30850);
+m_posnetServerAndroid.sendRequest(m_host, m_port, cashDepositRequest);
+```
+
+#### Cash Withdrawal (pol. Wypłata gotówki) (from version 1.1)
+```
+CashWithdrawalRequest cashWithdrawalRequest = new CashWithdrawalRequest(30850);
+m_posnetServerAndroid.sendRequest(m_host, m_port, cashWithdrawalRequest);
+```
+
 #### Custom report
 ```
 ReportCustomRequest reportCustomRequest = ReportCustomRequest.Builder()
