@@ -20,6 +20,9 @@ import java.util.concurrent.ExecutionException;
 
 import eu.bigdotsoftware.posnetserver.AssetHelper;
 import eu.bigdotsoftware.posnetserver.CancelRequest;
+import eu.bigdotsoftware.posnetserver.CashDepositRequest;
+import eu.bigdotsoftware.posnetserver.CashWithdrawalRequest;
+
 import eu.bigdotsoftware.posnetserver.CommandRequest;
 import eu.bigdotsoftware.posnetserver.FakturaHeaderExInfo;
 import eu.bigdotsoftware.posnetserver.FakturaOnlineTaxIdInfo;
@@ -284,6 +287,12 @@ public class MainActivity extends AppCompatActivity {
             // commandRequest.addCommand("servicerep");
             // commandRequest.addCommand("cash", "kw,30850\nwp,T");
             // m_posnetServerAndroid.sendRequest(m_host, m_port, commandRequest);
+
+            CashDepositRequest cashDepositRequest = new CashDepositRequest(30850);
+            m_posnetServerAndroid.sendRequest(m_host, m_port, cashDepositRequest);
+
+            CashWithdrawalRequest cashWithdrawalRequest = new CashWithdrawalRequest(30850);
+            m_posnetServerAndroid.sendRequest(m_host, m_port, cashWithdrawalRequest);
 
             /*
             ReportCustomRequest reportCustomRequest = ReportCustomRequest.Builder()
