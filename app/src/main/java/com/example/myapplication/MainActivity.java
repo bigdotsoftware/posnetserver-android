@@ -44,6 +44,7 @@ import eu.bigdotsoftware.posnetserver.FormsPdf417CodeResponse;
 import eu.bigdotsoftware.posnetserver.FormsQrCode;
 import eu.bigdotsoftware.posnetserver.FormsQrCodeRequest;
 import eu.bigdotsoftware.posnetserver.FormsQrCodeResponse;
+import eu.bigdotsoftware.posnetserver.HeaderSetRequest;
 import eu.bigdotsoftware.posnetserver.InvoiceOnlineRequest;
 import eu.bigdotsoftware.posnetserver.InvoiceOnlineResponse;
 import eu.bigdotsoftware.posnetserver.InvoiceRequest;
@@ -260,6 +261,9 @@ public class MainActivity extends AppCompatActivity {
             // HeaderSetRequest headerSetRequest = new HeaderSetRequest("My Company", true);
             // m_posnetServerAndroid.sendRequest(m_host, m_port, headerSetRequest);
 
+            // HeaderSetRequest headerSetRequest = new HeaderSetRequest("My Company", true, true);  //for ONLINE devices
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, headerSetRequest);
+
             // Date currentTime = Calendar.getInstance().getTime();
             // SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             // ReportEndOfDayRequest reportEndOfDayRequest = new ReportEndOfDayRequest(sdf.format(currentTime));
@@ -283,7 +287,10 @@ public class MainActivity extends AppCompatActivity {
             // ReportShiftRequest reportShiftRequest = new ReportShiftRequest("Shift #3", true);
             // m_posnetServerAndroid.sendRequest(m_host, m_port, reportShiftRequest);
 
-            // CommandRequest commandRequest = new CommandRequest();
+            CommandRequest commandRequest = new CommandRequest();
+            commandRequest.addCommand("sdrwr");
+            m_posnetServerAndroid.sendRequest(m_host, m_port, commandRequest);
+
             // commandRequest.addCommand("servicerep");
             // commandRequest.addCommand("cash", "kw,30850\nwp,T");
             // m_posnetServerAndroid.sendRequest(m_host, m_port, commandRequest);
