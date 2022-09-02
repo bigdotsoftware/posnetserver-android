@@ -372,6 +372,246 @@ InvoiceOnlineRequest invoice = InvoiceOnlineRequest.Builder()
 m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
 ```
 
+### Discounts and Surcharges (pol. rabaty i narzuty)
+#### VAT discount
+```
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareVatDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())      //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())         //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    //.setVatIndex(0)                                                   //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    .setDiscount(true)                  //true - discount, false - surcharge
+                                    .setValueAmount(100)                //value of discount/surcharge
+                                    //.setValuePercent(1500)            //percent value of discount/surcharge
+                                    .setName("Summer Promo 1")          //name of discount/surcharge
+                                    .setBaseAmount(1350)                //the amount of the sale from which the discount/surcharge is granted
+                                    .build()
+                            )
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareVatDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                    //.setVatIndex(0)
+                                    .setDiscount(true)
+                                    .setValueAmount(200)
+                                    //.setValuePercent(1500)
+                                    .setName("Summer Promo 2")
+                                    .setBaseAmount(1350)
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .setTotal(3400)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+```
+#### Line discount
+```
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareLineDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())      //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())         //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    //.setVatIndex(0)                                                   //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    .setRelatedName("Towar X")          //name of the product to which the discount/surcharge applies
+                                    .setBaseAmount(1350)                //the amount of the sale from which the discount/surcharge is granted
+                                    .setCancelDiscount(false)           //cancellation of a discount or surcharge
+                                    .setDiscount(true)                  //true - discount, false - surcharge
+                                    .setValueAmount(100)                //value of discount/surcharge
+                                    //.setValuePercent(1500)            //percent value of discount/surcharge
+                                    .setName("Summer Line Promo 1")     //name of discount/surcharge
+                                    .build()
+                            )
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareLineDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                    //.setVatIndex(0)
+                                    .setValueAmount(200)
+                                    .setCancelDiscount(false)
+                                    .setRelatedName("Towar Y")
+                                    .setBaseAmount(1350)
+                                    .setCancelDiscount(false)
+                                    .setDiscount(true)
+                                    .setValueAmount(200)
+                                    //.setValuePercent(1500)
+                                    .setName("Summer Line Promo 2")
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .setTotal(3400)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+```
+#### Promotion discount
+```
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .addDiscount(DiscountObject.Builder()
+                                    .preparePromoDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                    //.setVatIndex(0)
+                                    .setValueAmount(100)
+                                    .setCancelDiscount(false)
+                                    .setName("Summer Promo 1")
+                                    .build()
+                            )
+                            .addDiscount(DiscountObject.Builder()
+                                    .preparePromoDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                    //.setVatIndex(0)
+                                    .setValueAmount(200)
+                                    .setCancelDiscount(false)
+                                    .setName("Summer Promo 2")
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .setTotal(3400)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+```
+#### SubTotal discount
+```
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareSubTotalDiscount()
+                                    .setName("Summer Promo 1")
+                                    .setDiscount(true)
+                                    //.setValuePercent(20)
+                                    .setValueAmount(100)
+                                    .build()
+                            )
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareSubTotalDiscount()
+                                    .setName("Summer Promo 2")
+                                    .setDiscount(true)
+                                    //.setValuePercent(20)
+                                    .setValueAmount(200)
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .setTotal(3400)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+```
+#### Bill discount
+```
+
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .build())
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .addDiscountTotal(DiscountObject.Builder()
+                            .prepareBillDiscount()
+                            .setDiscount(true)
+                            .setName("Summer Promo")
+                            .setValueAmount(100)
+                            .build()
+                    )
+                    .setTotal(3600)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+```
+
+
 ### Barcodes
 You can print barcode as a separate printout.
 
