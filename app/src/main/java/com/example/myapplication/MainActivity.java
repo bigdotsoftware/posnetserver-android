@@ -24,6 +24,7 @@ import eu.bigdotsoftware.posnetserver.CashDepositRequest;
 import eu.bigdotsoftware.posnetserver.CashWithdrawalRequest;
 
 import eu.bigdotsoftware.posnetserver.CommandRequest;
+import eu.bigdotsoftware.posnetserver.DiscountObject;
 import eu.bigdotsoftware.posnetserver.FakturaHeaderExInfo;
 import eu.bigdotsoftware.posnetserver.FakturaOnlineTaxIdInfo;
 import eu.bigdotsoftware.posnetserver.FakturaTaxIdInfo;
@@ -231,7 +232,14 @@ public class MainActivity extends AppCompatActivity {
         try {
             // printFiscalPrintoutSimple1();
             // printFiscalPrintoutSimple2();
-            printFiscalPrintout();
+            // printFiscalPrintout();
+            // printFiscalPrintoutWithBillDiscount15Percent();
+            // printFiscalPrintoutWithBillDiscount100();
+            // printFiscalPrintoutWithSubTotalDiscounts();
+            // printFiscalPrintoutWithPromoDiscounts();
+            // printFiscalPrintoutWithLineDiscounts();
+            // printFiscalPrintoutWithVatDiscounts();
+            printFiscalPrintoutsWithDifferentDiscounts();
             // printFiscalPrintoutWithRest();
             // printInvoiceSimple1();
             // printInvoice();
@@ -287,19 +295,19 @@ public class MainActivity extends AppCompatActivity {
             // ReportShiftRequest reportShiftRequest = new ReportShiftRequest("Shift #3", true);
             // m_posnetServerAndroid.sendRequest(m_host, m_port, reportShiftRequest);
 
-            CommandRequest commandRequest = new CommandRequest();
-            commandRequest.addCommand("sdrwr");
-            m_posnetServerAndroid.sendRequest(m_host, m_port, commandRequest);
+            // CommandRequest commandRequest = new CommandRequest();
+            // commandRequest.addCommand("sdrwr");
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, commandRequest);
 
             // commandRequest.addCommand("servicerep");
             // commandRequest.addCommand("cash", "kw,30850\nwp,T");
             // m_posnetServerAndroid.sendRequest(m_host, m_port, commandRequest);
 
-            CashDepositRequest cashDepositRequest = new CashDepositRequest(30850);
-            m_posnetServerAndroid.sendRequest(m_host, m_port, cashDepositRequest);
+            // CashDepositRequest cashDepositRequest = new CashDepositRequest(30850);
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, cashDepositRequest);
 
-            CashWithdrawalRequest cashWithdrawalRequest = new CashWithdrawalRequest(30850);
-            m_posnetServerAndroid.sendRequest(m_host, m_port, cashWithdrawalRequest);
+            // CashWithdrawalRequest cashWithdrawalRequest = new CashWithdrawalRequest(30850);
+            // m_posnetServerAndroid.sendRequest(m_host, m_port, cashWithdrawalRequest);
 
             /*
             ReportCustomRequest reportCustomRequest = ReportCustomRequest.Builder()
@@ -689,6 +697,7 @@ public class MainActivity extends AppCompatActivity {
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
     }
+
     private void printFiscalPrintoutWithRest() throws PosnetException {
         ParagonRequest paragon = ParagonRequest.Builder()
                 .addLine(ParagonFakturaLine.Builder()
@@ -719,6 +728,1069 @@ public class MainActivity extends AppCompatActivity {
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
     }
+
+    private void printFiscalPrintoutWithBillDiscount15Percent() throws PosnetException {
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(1350)
+                        .setQuantity(1.0f)
+                        .build())
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2350)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .addDiscountTotal(DiscountObject.Builder()
+                        .prepareBillDiscount()
+                        .setDiscount(true)
+                        .setName("Summer Promo")
+                        .setValuePercent(1500)
+                        //.setValueAmount(150)
+                        .build()
+                )
+                .setTotal(3145)
+                .setPaymentFormsTotal(3145)
+                //.setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                //    .setTaxId("5558889944")
+                //    .setHighlighted(false)
+                //    .setDescription("Hello")
+                //    .build()
+                //)
+                .addPayment(PaymentObject.Builder()
+                        //.setType(0)
+                        .setType(PaymentObject.PaymentType.cash)
+                        .setValue(145)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        //.setType(2)
+                        .setType(PaymentObject.PaymentType.card)
+                        .setValue(3000)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #1")
+                        .setDoubleHeight(true)
+                        .setDoubleWidth(true)
+                        .setIdent(1)
+                        .build())
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #2")
+                        .setDoubleHeight(false)
+                        .setDoubleWidth(false)
+                        .setIdent(5)
+                        .build())
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        //.setBarcode(FormsBarcode.Builder()
+                        //    .setCode("Hello")
+                        //    .build())
+                        //.setBarcode(FormsAztecCode.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(10)
+                        //    .setCorrectionLevel(3)
+                        //    .setInputType(FormsAztecCode.FormsAztecCodeInputType.ascii)
+                        //    .build())
+                        // .setBarcode(FormsDmCode.Builder()
+                        //     .setCode("Hello")
+                        //     .setWidth(10)
+                        //     .setInputType(FormsDmCode.FormsDmCodeInputType.ascii)
+                        //     .build())
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        //.setBarcode(FormsPdf417Code.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(2)
+                        //    .setCorrectionLevel(3)
+                        //    .setProportion(3)
+                        //    .setColumns(1)
+                        //    .setVertical(false)
+                        //    .setInputType(FormsPdf417Code.FormsPdf417CodeInputType.ascii)
+                        //    .build())
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutWithBillDiscount100() throws PosnetException {
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(1350)
+                        .setQuantity(1.0f)
+                        .build())
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2350)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .addDiscountTotal(DiscountObject.Builder()
+                        .prepareBillDiscount()
+                        .setDiscount(true)
+                        .setName("Summer Promo")
+                        .setValueAmount(100)
+                        .build()
+                )
+                .enableDiscountInfo(true, true) //may not work on some printers, so disabled by default in the SDK
+                .setTotal(3600)
+                .setPaymentFormsTotal(3600)
+                //.setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                //    .setTaxId("5558889944")
+                //    .setHighlighted(false)
+                //    .setDescription("Hello")
+                //    .build()
+                //)
+                .addPayment(PaymentObject.Builder()
+                        //.setType(0)
+                        .setType(PaymentObject.PaymentType.cash)
+                        .setValue(600)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        //.setType(2)
+                        .setType(PaymentObject.PaymentType.card)
+                        .setValue(3000)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #1")
+                        .setDoubleHeight(true)
+                        .setDoubleWidth(true)
+                        .setIdent(1)
+                        .build())
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #2")
+                        .setDoubleHeight(false)
+                        .setDoubleWidth(false)
+                        .setIdent(5)
+                        .build())
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        //.setBarcode(FormsBarcode.Builder()
+                        //    .setCode("Hello")
+                        //    .build())
+                        //.setBarcode(FormsAztecCode.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(10)
+                        //    .setCorrectionLevel(3)
+                        //    .setInputType(FormsAztecCode.FormsAztecCodeInputType.ascii)
+                        //    .build())
+                        // .setBarcode(FormsDmCode.Builder()
+                        //     .setCode("Hello")
+                        //     .setWidth(10)
+                        //     .setInputType(FormsDmCode.FormsDmCodeInputType.ascii)
+                        //     .build())
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        //.setBarcode(FormsPdf417Code.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(2)
+                        //    .setCorrectionLevel(3)
+                        //    .setProportion(3)
+                        //    .setColumns(1)
+                        //    .setVertical(false)
+                        //    .setInputType(FormsPdf417Code.FormsPdf417CodeInputType.ascii)
+                        //    .build())
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutWithSubTotalDiscounts() throws PosnetException {
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(1350)
+                        .setQuantity(1.0f)
+                        .addDiscount(DiscountObject.Builder()
+                                .prepareSubTotalDiscount()
+                                .setName("Summer Promo 1")
+                                .setDiscount(true)
+                                //.setValuePercent(20)
+                                .setValueAmount(100)
+                                .build()
+                        )
+                        .addDiscount(DiscountObject.Builder()
+                                .prepareSubTotalDiscount()
+                                .setName("Summer Promo 2")
+                                .setDiscount(true)
+                                //.setValuePercent(20)
+                                .setValueAmount(200)
+                                .build()
+                        )
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2350)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                //.addDiscountTotal(DiscountObject.Builder()
+                //        .prepareBillDiscount()
+                //        .setDiscount(true)
+                //        .setName("Summer Promo")
+                //        .setValueAmount(100)
+                //        .build()
+                //)
+                //.enableDiscountInfo(true, true) //may not work on some printers, so disabled by default in the SDK
+
+
+                .setTotal(3400)
+                .setPaymentFormsTotal(3400)
+                //.setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                //    .setTaxId("5558889944")
+                //    .setHighlighted(false)
+                //    .setDescription("Hello")
+                //    .build()
+                //)
+                .addPayment(PaymentObject.Builder()
+                        //.setType(0)
+                        .setType(PaymentObject.PaymentType.cash)
+                        .setValue(400)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        //.setType(2)
+                        .setType(PaymentObject.PaymentType.card)
+                        .setValue(3000)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #1")
+                        .setDoubleHeight(true)
+                        .setDoubleWidth(true)
+                        .setIdent(1)
+                        .build())
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #2")
+                        .setDoubleHeight(false)
+                        .setDoubleWidth(false)
+                        .setIdent(5)
+                        .build())
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        //.setBarcode(FormsBarcode.Builder()
+                        //    .setCode("Hello")
+                        //    .build())
+                        //.setBarcode(FormsAztecCode.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(10)
+                        //    .setCorrectionLevel(3)
+                        //    .setInputType(FormsAztecCode.FormsAztecCodeInputType.ascii)
+                        //    .build())
+                        // .setBarcode(FormsDmCode.Builder()
+                        //     .setCode("Hello")
+                        //     .setWidth(10)
+                        //     .setInputType(FormsDmCode.FormsDmCodeInputType.ascii)
+                        //     .build())
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        //.setBarcode(FormsPdf417Code.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(2)
+                        //    .setCorrectionLevel(3)
+                        //    .setProportion(3)
+                        //    .setColumns(1)
+                        //    .setVertical(false)
+                        //    .setInputType(FormsPdf417Code.FormsPdf417CodeInputType.ascii)
+                        //    .build())
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutWithPromoDiscounts() throws PosnetException {
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(1350)
+                        .setQuantity(1.0f)
+                        .addDiscount(DiscountObject.Builder()
+                                .preparePromoDiscount()
+                                //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                //.setVatIndex(0)
+                                .setValueAmount(100)
+                                .setCancelDiscount(false)
+                                .setName("Summer Promo 1")
+                                .build()
+                        )
+                        .addDiscount(DiscountObject.Builder()
+                                .preparePromoDiscount()
+                                //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                //.setVatIndex(0)
+                                .setValueAmount(200)
+                                .setCancelDiscount(false)
+                                .setName("Summer Promo 2")
+                                .build()
+                        )
+                        /*.addDiscount(DiscountObject.Builder()
+                                .prepareLineDiscount()
+                                //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                //.setVatIndex(0)
+                                .setName("Summer Promo")
+                                .setName("Summer Promo")
+                                .setValueAmount(150)
+                                .setCancelDiscount(false)
+
+                                .build()
+                        )*/
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2350)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                //.addDiscountTotal(DiscountObject.Builder()
+                //        .prepareBillDiscount()
+                //        .setDiscount(true)
+                //        .setName("Summer Promo")
+                //        .setValueAmount(100)
+                //        .build()
+                //)
+                //.enableDiscountInfo(true, true) //may not work on some printers, so disabled by default in the SDK
+
+
+                .setTotal(3400)
+                .setPaymentFormsTotal(3400)
+                //.setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                //    .setTaxId("5558889944")
+                //    .setHighlighted(false)
+                //    .setDescription("Hello")
+                //    .build()
+                //)
+                .addPayment(PaymentObject.Builder()
+                        //.setType(0)
+                        .setType(PaymentObject.PaymentType.cash)
+                        .setValue(400)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        //.setType(2)
+                        .setType(PaymentObject.PaymentType.card)
+                        .setValue(3000)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #1")
+                        .setDoubleHeight(true)
+                        .setDoubleWidth(true)
+                        .setIdent(1)
+                        .build())
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #2")
+                        .setDoubleHeight(false)
+                        .setDoubleWidth(false)
+                        .setIdent(5)
+                        .build())
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        //.setBarcode(FormsBarcode.Builder()
+                        //    .setCode("Hello")
+                        //    .build())
+                        //.setBarcode(FormsAztecCode.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(10)
+                        //    .setCorrectionLevel(3)
+                        //    .setInputType(FormsAztecCode.FormsAztecCodeInputType.ascii)
+                        //    .build())
+                        // .setBarcode(FormsDmCode.Builder()
+                        //     .setCode("Hello")
+                        //     .setWidth(10)
+                        //     .setInputType(FormsDmCode.FormsDmCodeInputType.ascii)
+                        //     .build())
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        //.setBarcode(FormsPdf417Code.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(2)
+                        //    .setCorrectionLevel(3)
+                        //    .setProportion(3)
+                        //    .setColumns(1)
+                        //    .setVertical(false)
+                        //    .setInputType(FormsPdf417Code.FormsPdf417CodeInputType.ascii)
+                        //    .build())
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutWithLineDiscounts() throws PosnetException {
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(1350)
+                        .setQuantity(1.0f)
+                        .addDiscount(DiscountObject.Builder()
+                                .prepareLineDiscount()
+                                //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())      //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                .setVatName("A", m_posnetServerAndroid.getVatCache())         //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                //.setVatIndex(0)                                                   //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                .setRelatedName("Towar X")          //name of the product to which the discount/surcharge applies
+                                .setBaseAmount(1350)                //the amount of the sale from which the discount/surcharge is granted
+                                .setCancelDiscount(false)           //cancellation of a discount or surcharge
+                                .setDiscount(true)                  //true - discount, false - surcharge
+                                .setValueAmount(100)                //value of discount/surcharge
+                                //.setValuePercent(1500)            //percent value of discount/surcharge
+                                .setName("Summer Line Promo 1")     //name of discount/surcharge
+                                .build()
+                        )
+                        .addDiscount(DiscountObject.Builder()
+                                .prepareLineDiscount()
+                                //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                //.setVatIndex(0)
+                                .setValueAmount(200)
+                                .setCancelDiscount(false)
+                                .setRelatedName("Towar Y")
+                                .setBaseAmount(1350)
+                                .setCancelDiscount(false)
+                                .setDiscount(true)
+                                .setValueAmount(200)
+                                //.setValuePercent(1500)
+                                .setName("Summer Line Promo 2")
+                                .build()
+                        )
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2350)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                //.addDiscountTotal(DiscountObject.Builder()
+                //        .prepareBillDiscount()
+                //        .setDiscount(true)
+                //        .setName("Summer Promo")
+                //        .setValueAmount(100)
+                //        .build()
+                //)
+                //.enableDiscountInfo(true, true) //may not work on some printers, so disabled by default in the SDK
+
+
+                .setTotal(3400)
+                .setPaymentFormsTotal(3400)
+                //.setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                //    .setTaxId("5558889944")
+                //    .setHighlighted(false)
+                //    .setDescription("Hello")
+                //    .build()
+                //)
+                .addPayment(PaymentObject.Builder()
+                        //.setType(0)
+                        .setType(PaymentObject.PaymentType.cash)
+                        .setValue(400)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        //.setType(2)
+                        .setType(PaymentObject.PaymentType.card)
+                        .setValue(3000)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #1")
+                        .setDoubleHeight(true)
+                        .setDoubleWidth(true)
+                        .setIdent(1)
+                        .build())
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #2")
+                        .setDoubleHeight(false)
+                        .setDoubleWidth(false)
+                        .setIdent(5)
+                        .build())
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        //.setBarcode(FormsBarcode.Builder()
+                        //    .setCode("Hello")
+                        //    .build())
+                        //.setBarcode(FormsAztecCode.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(10)
+                        //    .setCorrectionLevel(3)
+                        //    .setInputType(FormsAztecCode.FormsAztecCodeInputType.ascii)
+                        //    .build())
+                        // .setBarcode(FormsDmCode.Builder()
+                        //     .setCode("Hello")
+                        //     .setWidth(10)
+                        //     .setInputType(FormsDmCode.FormsDmCodeInputType.ascii)
+                        //     .build())
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        //.setBarcode(FormsPdf417Code.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(2)
+                        //    .setCorrectionLevel(3)
+                        //    .setProportion(3)
+                        //    .setColumns(1)
+                        //    .setVertical(false)
+                        //    .setInputType(FormsPdf417Code.FormsPdf417CodeInputType.ascii)
+                        //    .build())
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutWithVatDiscounts() throws PosnetException {
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(1350)
+                        .setQuantity(1.0f)
+                        .addDiscount(DiscountObject.Builder()
+                                .prepareVatDiscount()
+                                //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())      //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                .setVatName("A", m_posnetServerAndroid.getVatCache())         //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                //.setVatIndex(0)                                                   //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                .setDiscount(true)                  //true - discount, false - surcharge
+                                .setValueAmount(100)                //value of discount/surcharge
+                                //.setValuePercent(1500)            //percent value of discount/surcharge
+                                .setName("Summer Promo 1")          //name of discount/surcharge
+                                .setBaseAmount(1350)                //the amount of the sale from which the discount/surcharge is granted
+                                .build()
+                        )
+                        .addDiscount(DiscountObject.Builder()
+                                .prepareVatDiscount()
+                                //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                //.setVatIndex(0)
+                                .setDiscount(true)
+                                .setValueAmount(200)
+                                //.setValuePercent(1500)
+                                .setName("Summer Promo 2")
+                                .setBaseAmount(1350)
+                                .build()
+                        )
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2350)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                //.addDiscountTotal(DiscountObject.Builder()
+                //        .prepareBillDiscount()
+                //        .setDiscount(true)
+                //        .setName("Summer Promo")
+                //        .setValueAmount(100)
+                //        .build()
+                //)
+                //.enableDiscountInfo(true, true) //may not work on some printers, so disabled by default in the SDK
+
+
+                .setTotal(3400)
+                .setPaymentFormsTotal(3400)
+                //.setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                //    .setTaxId("5558889944")
+                //    .setHighlighted(false)
+                //    .setDescription("Hello")
+                //    .build()
+                //)
+                .addPayment(PaymentObject.Builder()
+                        //.setType(0)
+                        .setType(PaymentObject.PaymentType.cash)
+                        .setValue(400)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        //.setType(2)
+                        .setType(PaymentObject.PaymentType.card)
+                        .setValue(3000)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #1")
+                        .setDoubleHeight(true)
+                        .setDoubleWidth(true)
+                        .setIdent(1)
+                        .build())
+                .addExtraLine(ParagonFakturaExtraLine.Builder()
+                        .setText("Sample line #2")
+                        .setDoubleHeight(false)
+                        .setDoubleWidth(false)
+                        .setIdent(5)
+                        .build())
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        //.setBarcode(FormsBarcode.Builder()
+                        //    .setCode("Hello")
+                        //    .build())
+                        //.setBarcode(FormsAztecCode.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(10)
+                        //    .setCorrectionLevel(3)
+                        //    .setInputType(FormsAztecCode.FormsAztecCodeInputType.ascii)
+                        //    .build())
+                        // .setBarcode(FormsDmCode.Builder()
+                        //     .setCode("Hello")
+                        //     .setWidth(10)
+                        //     .setInputType(FormsDmCode.FormsDmCodeInputType.ascii)
+                        //     .build())
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        //.setBarcode(FormsPdf417Code.Builder()
+                        //    .setCode("Hello")
+                        //    .setWidth(2)
+                        //    .setCorrectionLevel(3)
+                        //    .setProportion(3)
+                        //    .setColumns(1)
+                        //    .setVertical(false)
+                        //    .setInputType(FormsPdf417Code.FormsPdf417CodeInputType.ascii)
+                        //    .build())
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutsWithDifferentDiscounts() throws PosnetException {
+
+        //vat
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareVatDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())      //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())         //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    //.setVatIndex(0)                                                   //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    .setDiscount(true)                  //true - discount, false - surcharge
+                                    .setValueAmount(100)                //value of discount/surcharge
+                                    //.setValuePercent(1500)            //percent value of discount/surcharge
+                                    .setName("Summer Promo 1")          //name of discount/surcharge
+                                    .setBaseAmount(1350)                //the amount of the sale from which the discount/surcharge is granted
+                                    .build()
+                            )
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareVatDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                    //.setVatIndex(0)
+                                    .setDiscount(true)
+                                    .setValueAmount(200)
+                                    //.setValuePercent(1500)
+                                    .setName("Summer Promo 2")
+                                    .setBaseAmount(1350)
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .setTotal(3400)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+
+        //line
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareLineDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())      //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())         //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    //.setVatIndex(0)                                                   //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                                    .setRelatedName("Towar X")          //name of the product to which the discount/surcharge applies
+                                    .setBaseAmount(1350)                //the amount of the sale from which the discount/surcharge is granted
+                                    .setCancelDiscount(false)           //cancellation of a discount or surcharge
+                                    .setDiscount(true)                  //true - discount, false - surcharge
+                                    .setValueAmount(100)                //value of discount/surcharge
+                                    //.setValuePercent(1500)            //percent value of discount/surcharge
+                                    .setName("Summer Line Promo 1")     //name of discount/surcharge
+                                    .build()
+                            )
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareLineDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                    //.setVatIndex(0)
+                                    .setValueAmount(200)
+                                    .setCancelDiscount(false)
+                                    .setRelatedName("Towar Y")
+                                    .setBaseAmount(1350)
+                                    .setCancelDiscount(false)
+                                    .setDiscount(true)
+                                    .setValueAmount(200)
+                                    //.setValuePercent(1500)
+                                    .setName("Summer Line Promo 2")
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .setTotal(3400)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+
+        //promo
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .addDiscount(DiscountObject.Builder()
+                                    .preparePromoDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                    //.setVatIndex(0)
+                                    .setValueAmount(100)
+                                    .setCancelDiscount(false)
+                                    .setName("Summer Promo 1")
+                                    .build()
+                            )
+                            .addDiscount(DiscountObject.Builder()
+                                    .preparePromoDiscount()
+                                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                                    //.setVatIndex(0)
+                                    .setValueAmount(200)
+                                    .setCancelDiscount(false)
+                                    .setName("Summer Promo 2")
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .setTotal(3400)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+
+        //subtotal
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareSubTotalDiscount()
+                                    .setName("Summer Promo 1")
+                                    .setDiscount(true)
+                                    //.setValuePercent(20)
+                                    .setValueAmount(100)
+                                    .build()
+                            )
+                            .addDiscount(DiscountObject.Builder()
+                                    .prepareSubTotalDiscount()
+                                    .setName("Summer Promo 2")
+                                    .setDiscount(true)
+                                    //.setValuePercent(20)
+                                    .setValueAmount(200)
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .setTotal(3400)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+
+        //bill
+        {
+            ParagonRequest paragon = ParagonRequest.Builder()
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 1")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(1350)
+                            .setQuantity(1.0f)
+                            .build())
+                    .addLine(ParagonFakturaLine.Builder()
+                            .setName("Towar 2")
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setPrice(2350)
+                            .setQuantity(1.0f)
+                            .build()
+                    )
+                    .addDiscountTotal(DiscountObject.Builder()
+                            .prepareBillDiscount()
+                            .setDiscount(true)
+                            .setName("Summer Promo")
+                            .setValueAmount(100)
+                            .build()
+                    )
+                    .setTotal(3600)
+                    .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+        }
+    }
+
     private void printFiscalPrintout() throws PosnetException {
 
         //---------------------------------------------------------------------------
