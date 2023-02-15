@@ -239,7 +239,8 @@ public class MainActivity extends AppCompatActivity {
             // printFiscalPrintoutWithPromoDiscounts();
             // printFiscalPrintoutWithLineDiscounts();
             // printFiscalPrintoutWithVatDiscounts();
-            printFiscalPrintoutsWithDifferentDiscounts();
+            printFiscalPrintoutWithVariousDiscounts();
+            // printFiscalPrintoutsWithDifferentDiscounts();
             // printFiscalPrintoutWithRest();
             // printInvoiceSimple1();
             // printInvoice();
@@ -1556,6 +1557,80 @@ public class MainActivity extends AppCompatActivity {
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
     }
+
+    private void printFiscalPrintoutWithVariousDiscounts() throws PosnetException {
+        //{
+            //"lines":[{"name":"Pasta rigiattoni arabiata 5.0%","price":2989,"quantity":1,"vatPercent":"5,00"}],
+            //"summaryTotal":1,"summaryPaymentForm":1,
+            //"payments":[{"name":"","type":0,"value":1,"rest":false}],
+            //"discounts":[
+            //        {"name":"Zniżka","valueAmount":2989,"discount":true},
+            //        {"name":"Dopłata","valueAmount":1,"discount":false}
+            //        ],
+            //"footer":{"cashier":"Kasjer bafood","systemNumber":"220915-44839","cashRegisterNumber":"Kasa 1"}
+        //}
+
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Pasta rigiattoni arabiata 3.0%")
+                        .setVatPercent("3,00", m_posnetServerAndroid.getVatCache())
+                        //.setVatName("C", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2989)
+                        .setQuantity(1.0f)
+                        .build())
+                .addDiscountTotal(DiscountObject.Builder()
+                        .prepareBillDiscount()
+                        .setDiscount(false)
+                        .setName("Dopłata")
+                        .setValueAmount(1)
+                        .build()
+                )
+                .addDiscountTotal(DiscountObject.Builder()
+                        .prepareBillDiscount()
+                        .setDiscount(true)
+                        .setName("Zniżka")
+                        .setValueAmount(2989)
+                        .build()
+                )
+                //.enableDiscountInfo(true, true) //may not work on some printers, so disabled by default in the SDK
+                .setTotal(1)
+                .setPaymentFormsTotal(1)
+                .addPayment(PaymentObject.Builder()
+                        //.setType(0)
+                        .setType(PaymentObject.PaymentType.cash)
+                        .setValue(1)
+                        .setName("")
+                        .setRest(false)
+                        .build()
+                )
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
 
     private void printFiscalPrintoutsWithDifferentDiscounts() throws PosnetException {
 
