@@ -10,21 +10,17 @@ import android.widget.TextView;
 import com.example.myapplication.databinding.ActivityMainBinding;
 
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import eu.bigdotsoftware.posnetserver.AssetHelper;
+import eu.bigdotsoftware.posnetserver.CancelEDocumentRequest;
 import eu.bigdotsoftware.posnetserver.CancelRequest;
-import eu.bigdotsoftware.posnetserver.CashDepositRequest;
-import eu.bigdotsoftware.posnetserver.CashWithdrawalRequest;
 
-import eu.bigdotsoftware.posnetserver.CommandRequest;
 import eu.bigdotsoftware.posnetserver.DiscountObject;
+import eu.bigdotsoftware.posnetserver.EInvoiceMode;
+import eu.bigdotsoftware.posnetserver.EParagonMode;
 import eu.bigdotsoftware.posnetserver.FakturaHeaderExInfo;
 import eu.bigdotsoftware.posnetserver.FakturaOnlineTaxIdInfo;
 import eu.bigdotsoftware.posnetserver.FakturaTaxIdInfo;
@@ -38,23 +34,18 @@ import eu.bigdotsoftware.posnetserver.FormsBarcodeResponse;
 import eu.bigdotsoftware.posnetserver.FormsDmCode;
 import eu.bigdotsoftware.posnetserver.FormsDmCodeRequest;
 import eu.bigdotsoftware.posnetserver.FormsDmCodeResponse;
-import eu.bigdotsoftware.posnetserver.FormsLine;
 import eu.bigdotsoftware.posnetserver.FormsPdf417Code;
 import eu.bigdotsoftware.posnetserver.FormsPdf417CodeRequest;
 import eu.bigdotsoftware.posnetserver.FormsPdf417CodeResponse;
 import eu.bigdotsoftware.posnetserver.FormsQrCode;
 import eu.bigdotsoftware.posnetserver.FormsQrCodeRequest;
 import eu.bigdotsoftware.posnetserver.FormsQrCodeResponse;
-import eu.bigdotsoftware.posnetserver.HeaderSetRequest;
 import eu.bigdotsoftware.posnetserver.InvoiceOnlineRequest;
 import eu.bigdotsoftware.posnetserver.InvoiceOnlineResponse;
 import eu.bigdotsoftware.posnetserver.InvoiceRequest;
 import eu.bigdotsoftware.posnetserver.InvoiceResponse;
 import eu.bigdotsoftware.posnetserver.LicenseInfo;
 import eu.bigdotsoftware.posnetserver.LicenseRegistrationInfo;
-import eu.bigdotsoftware.posnetserver.LoginRequest;
-import eu.bigdotsoftware.posnetserver.LogoutRequest;
-import eu.bigdotsoftware.posnetserver.MaintenanceRequest;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaExtraLine;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaFooter;
 import eu.bigdotsoftware.posnetserver.ParagonFakturaLine;
@@ -62,20 +53,12 @@ import eu.bigdotsoftware.posnetserver.ParagonRequest;
 import eu.bigdotsoftware.posnetserver.ParagonResponse;
 import eu.bigdotsoftware.posnetserver.ParagonTaxIdInfo;
 import eu.bigdotsoftware.posnetserver.PaymentObject;
-import eu.bigdotsoftware.posnetserver.PaymentObjectBuilder;
 import eu.bigdotsoftware.posnetserver.PosnetException;
 import eu.bigdotsoftware.posnetserver.PosnetRequest;
 import eu.bigdotsoftware.posnetserver.PosnetResponse;
 import eu.bigdotsoftware.posnetserver.PosnetServerAndroid;
 import eu.bigdotsoftware.posnetserver.ProcessWatcher;
-import eu.bigdotsoftware.posnetserver.ReportCustomRequest;
-import eu.bigdotsoftware.posnetserver.ReportEndOfDayRequest;
-import eu.bigdotsoftware.posnetserver.ReportEndOfMonthRequest;
-import eu.bigdotsoftware.posnetserver.ReportPeriodicRequest;
-import eu.bigdotsoftware.posnetserver.ReportShiftRequest;
-import eu.bigdotsoftware.posnetserver.StatusLicznikowRequest;
 import eu.bigdotsoftware.posnetserver.StatusLicznikowResponse;
-import eu.bigdotsoftware.posnetserver.StatusTotalizerowRequest;
 import eu.bigdotsoftware.posnetserver.StatusTotalizerowResponse;
 import eu.bigdotsoftware.posnetserver.VatRate;
 import eu.bigdotsoftware.posnetserver.VatRatesGetResponse;
@@ -112,8 +95,10 @@ public class MainActivity extends AppCompatActivity {
 
         //---------------------------------------------------------------------------
         //Initialize
-        m_host = "192.168.0.68";
-        m_port = 12346;
+        // m_host = "192.168.0.68";
+        // m_port = 12346;
+        m_host = "192.168.0.105";
+        m_port = 6666;
         m_posnetServerAndroid = new PosnetServerAndroid();
         m_posnetServerAndroid.setReadTimeout(30000L);
         m_posnetServerAndroid.setSocketTimeout(30000L);
@@ -208,9 +193,11 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        String usedLicenseFileName = "Test.lic";
+
         //---------------------------------------------------------------------------
         //License validation
-        LicenseInfo info = m_posnetServerAndroid.validateLicenseFile(this, "Test.lic");
+        LicenseInfo info = m_posnetServerAndroid.validateLicenseFile(this, usedLicenseFileName);
         Log.i(TAG, "License details | " + info.getCompanyName());
         for(int i=0;i<info.getExtrasCount();i++)
             Log.i(TAG, "License details | " + info.getExtras(i));
@@ -221,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         //using file name from assets registerLicenseFile(name)
         //LicenseRegistrationInfo licenseRegistrationInfo = m_posnetServerAndroid.registerLicenseFile(this, "Test.lic", Arrays.asList(m_host+":"+m_port));
         //alternatively using registerLicenseFile(bytes[])
-        byte[] licbytes = AssetHelper.readAssetContent(this, "Test.lic");
+        byte[] licbytes = AssetHelper.readAssetContent(this, usedLicenseFileName);
         LicenseRegistrationInfo licenseRegistrationInfo = m_posnetServerAndroid.registerLicenseFile(this, licbytes, Arrays.asList(m_host+":"+m_port));
 
         if( !licenseRegistrationInfo.isOk())
@@ -230,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "License file registered: OK");
 
         try {
+            //-------------- classic printouts
             // printFiscalPrintoutSimple1();
             // printFiscalPrintoutSimple2();
             // printFiscalPrintout();
@@ -239,13 +227,22 @@ public class MainActivity extends AppCompatActivity {
             // printFiscalPrintoutWithPromoDiscounts();
             // printFiscalPrintoutWithLineDiscounts();
             // printFiscalPrintoutWithVatDiscounts();
-            printFiscalPrintoutsWithDifferentDiscounts();
+            // printFiscalPrintoutWithVariousDiscounts();
+            // printFiscalPrintoutsWithDifferentDiscounts();
             // printFiscalPrintoutWithRest();
             // printInvoiceSimple1();
             // printInvoice();
             // printInvoiceOnline();
             // printBarcodes();
 
+            //-------------- eDocument examples
+            // printInvoiceOnlineInEInvoiceMode();
+            // printFiscalPrintoutInEParagonMode();
+            // printFiscalPrintoutInEParagonModeWithBasicDiscount();
+            // printFiscalPrintoutInEParagonModeWithRest();
+            printFiscalPrintoutInEParagonModeWithCustomHeaderFooterImages();
+
+            //-------------- other examples
             // VatRatesGetRequest vatRatesGetRequest = new VatRatesGetRequest();
             // m_posnetServerAndroid.sendRequest(m_host, m_port, vatRatesGetRequest);
 
@@ -632,6 +629,113 @@ public class MainActivity extends AppCompatActivity {
                 )
                 .setTotal(1400)
                 .setPaymentFormsTotal(1400)
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
+    }
+
+    private void printInvoiceOnlineInEInvoiceMode() throws PosnetException {
+
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Cancel edocument request if any in progress
+        Log.i(TAG, "Cancel eDocument request in progress");
+        CancelEDocumentRequest cancelEDocumentRequest = new CancelEDocumentRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelEDocumentRequest);
+            Log.i(TAG, "Cancel eDocument request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Process Invoice as an eInvoice (pol. eFaktura)
+        InvoiceOnlineRequest invoice = InvoiceOnlineRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Coca-Cola")
+                        .setVatIndex(0)
+                        .setPrice(550)
+                        .setQuantity(2.0f)
+                        .setDescription("Some description")
+                        .setUnit("l")
+                        .setCode("DEF12345")
+                        .setPKWiU("50.41.34.1")
+                        .build())
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Banana")
+                        .setVatIndex(2)
+                        .setPrice(100)
+                        .setQuantity(3.0f)
+                        .build()
+                )
+                .addExtraLine3("Pole dodatkowe #1", "top")
+                .addExtraLine3("Pole dodatkowe #2", "bottom")
+                .addExtraLine3("Pole dodatkowe #3", "middle")
+                .setHeader(FakturaOnlineTaxIdInfo.Builder()
+                        .setInvoiceName("Nazwa Faktury")
+                        .setCopies(0)
+                        .setOriginalCopyHeadline(true)
+                        .setLineWidth(40)
+                        .setFiscalLineWidth(40)
+                        .setBuyerName(new ArrayList<>(Arrays.asList("Nazwa firmy")))
+                        .setTaxId("584-222-98-89")
+                        .setBuyerAddress(new ArrayList<>(Arrays.asList("ul. Miejska 56", "88-888 Miasto")))
+                        .setBuyerSection(0)
+                        .setBuyerAttributes(0)
+                        .setNumber("56/2020")
+                        .setInvoiceNumberSection(0)
+                        .setInvoiceNumberAttributes(0)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(0)
+                        .setValue(1000)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(2)
+                        .setValue(400)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        .build()
+                )
+                .enableEInvoiceMode(EInvoiceMode.Builder()
+                        .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
+                        .setClientEmail("jan.kowalski-1@email.com")
+                        .setClientPhone("500500500")
+                        .setService("https://eparagon.cloud:4051")
+                        .build()
+                )
+                .setTotal(1400)
                 .build();
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
@@ -1552,6 +1656,449 @@ public class MainActivity extends AppCompatActivity {
                         //    .build())
                         .build()
                 )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutWithVariousDiscounts() throws PosnetException {
+        //{
+            //"lines":[{"name":"Pasta rigiattoni arabiata 5.0%","price":2989,"quantity":1,"vatPercent":"5,00"}],
+            //"summaryTotal":1,"summaryPaymentForm":1,
+            //"payments":[{"name":"","type":0,"value":1,"rest":false}],
+            //"discounts":[
+            //        {"name":"Zniżka","valueAmount":2989,"discount":true},
+            //        {"name":"Dopłata","valueAmount":1,"discount":false}
+            //        ],
+            //"footer":{"cashier":"Kasjer bafood","systemNumber":"220915-44839","cashRegisterNumber":"Kasa 1"}
+        //}
+
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Pasta rigiattoni arabiata 3.0%")
+                        .setVatPercent("3,00", m_posnetServerAndroid.getVatCache())
+                        //.setVatName("C", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2989)
+                        .setQuantity(1.0f)
+                        .build())
+                .addDiscountTotal(DiscountObject.Builder()
+                        .prepareBillDiscount()
+                        .setDiscount(false)
+                        .setName("Dopłata")
+                        .setValueAmount(1)
+                        .build()
+                )
+                .addDiscountTotal(DiscountObject.Builder()
+                        .prepareBillDiscount()
+                        .setDiscount(true)
+                        .setName("Zniżka")
+                        .setValueAmount(2989)
+                        .build()
+                )
+                //.enableDiscountInfo(true, true) //may not work on some printers, so disabled by default in the SDK
+                .setTotal(1)
+                .setPaymentFormsTotal(1)
+                .addPayment(PaymentObject.Builder()
+                        //.setType(0)
+                        .setType(PaymentObject.PaymentType.cash)
+                        .setValue(1)
+                        .setName("")
+                        .setRest(false)
+                        .build()
+                )
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutInEParagonModeWithBasicDiscount() throws PosnetException {
+
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Cancel edocument request if any in progress
+        Log.i(TAG, "Cancel eDocument request in progress");
+        CancelEDocumentRequest cancelEDocumentRequest = new CancelEDocumentRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelEDocumentRequest);
+            Log.i(TAG, "Cancel eDocument request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(1350)
+                        .setQuantity(1.0f)
+                        .addDiscount(DiscountObject.Builder()
+                                .prepareBasicDiscount()
+                                .setDiscount(true)                  //true - discount, false - surcharge
+                                .setValueAmount(100)                //value of discount/surcharge
+                                //.setValuePercent(1500)            //percent value of discount/surcharge
+                                .setName("Summer Promo 1")          //name of discount/surcharge
+                                .build()
+                        )
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2350)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                        .setTaxId("5558889944")
+                        .setHighlighted(false)
+                        .setDescription("Hello")
+                        .build()
+                )
+                .enableEParagonMode(EParagonMode.Builder()
+                        .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
+                        .setClientEmail("jan.kowalski-1@email.com")
+                        .setClientPhone("500500500")
+                        .setService("https://eparagon.cloud:4051")
+                        .build()
+                )
+                .setTotal(3600)
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutInEParagonModeWithRest() throws PosnetException {
+
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Cancel edocument request if any in progress
+        Log.i(TAG, "Cancel eDocument request in progress");
+        CancelEDocumentRequest cancelEDocumentRequest = new CancelEDocumentRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelEDocumentRequest);
+            Log.i(TAG, "Cancel eDocument request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        //{ "na": "Towar 1", "il": 1.0, "vt": 0,"pr": 1235},
+        //{ "na": "Towar 2", "il": 1.0, "vt": 0,"pr": 3456},
+        //{ "na": "Towar stawka B", "il": 1.0, "vtn": "B","pr": 600},
+        //{ "na": "Towar stawka C", "il": 2.0, "vtn": "C","pr": 400},
+        //{ "na": "Towar stawka D", "il": 3.0, "vtn": "D","pr": 400},
+        //{ "na": "Towar stawka E", "il": 3.0, "vtn": "E","pr": 250}
+
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        //.setVatName("A", m_posnetServerAndroid.getVatCache())
+                        .setVatIndex(0)
+                        .setPrice(1235)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        //.setVatName("A", m_posnetServerAndroid.getVatCache())
+                        .setVatIndex(0)
+                        .setPrice(3456)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar stawka B")
+                        .setVatName("B", m_posnetServerAndroid.getVatCache())
+                        .setPrice(600)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar stawka C")
+                        .setVatName("C", m_posnetServerAndroid.getVatCache())
+                        .setPrice(400)
+                        .setQuantity(2.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar stawka D")
+                        .setVatName("D", m_posnetServerAndroid.getVatCache())
+                        .setPrice(400)
+                        .setQuantity(3.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar stawka E")
+                        .setVatName("E", m_posnetServerAndroid.getVatCache())
+                        .setPrice(250)
+                        .setQuantity(3.0f)
+                        .build()
+                )
+                .setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                        .setTaxId("5558889944")
+                        .setHighlighted(false)
+                        .setDescription("NIP NABYWCY")
+                        .build()
+                )
+                .enableEParagonMode(EParagonMode.Builder()
+                        .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
+                        .setClientEmail("jan.kowalski-1@email.com")
+                        .setClientPhone("500500500")
+                        .setService("https://eparagon.cloud:4051")
+                        .build()
+                )
+                .setTotal(8041)
+                .setPaymentFormsTotal(9000)
+                .setRest(959)
+                .addPayment(PaymentObject.Builder()
+                        .setType(2)
+                        .setValue(9000)
+                        .setName("Konto klienta")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(8)
+                        .setValue(959)
+                        .setName("Konto klienta")
+                        .setRest(true)
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutInEParagonMode() throws PosnetException {
+
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Cancel edocument request if any in progress
+        Log.i(TAG, "Cancel eDocument request in progress");
+        CancelEDocumentRequest cancelEDocumentRequest = new CancelEDocumentRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelEDocumentRequest);
+            Log.i(TAG, "Cancel eDocument request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+            .addLine(ParagonFakturaLine.Builder()
+                    .setName("Towar 1")
+                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                    //.setVatIndex(0)
+                    .setPrice(1350)
+                    .setQuantity(1.0f)
+                    .addDiscount(DiscountObject.Builder()
+                            .prepareVatDiscount()
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())      //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())         //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                            //.setVatIndex(0)                                                   //identifier of the VAT rate that discount/surcharge is granted and in which the goods were sold
+                            .setDiscount(true)                  //true - discount, false - surcharge
+                            .setValueAmount(100)                //value of discount/surcharge
+                            //.setValuePercent(1500)            //percent value of discount/surcharge
+                            .setName("Summer Promo 1")          //name of discount/surcharge
+                            .setBaseAmount(1350)                //the amount of the sale from which the discount/surcharge is granted
+                            .build()
+                    )
+                    .addDiscount(DiscountObject.Builder()
+                            .prepareVatDiscount()
+                            //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                            .setVatName("A", m_posnetServerAndroid.getVatCache())
+                            //.setVatIndex(0)
+                            .setDiscount(true)
+                            .setValueAmount(200)
+                            //.setValuePercent(1500)
+                            .setName("Summer Promo 2")
+                            .setBaseAmount(1350)
+                            .build()
+                    )
+                    .build()
+            )
+            .addLine(ParagonFakturaLine.Builder()
+                    .setName("Towar 2")
+                    //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                    .setVatName("A", m_posnetServerAndroid.getVatCache())
+                    //.setVatIndex(0)
+                    .setPrice(2350)
+                    .setQuantity(1.0f)
+                    .build()
+            )
+            .setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                .setTaxId("5558889944")
+                .setHighlighted(false)
+                .setDescription("Hello")
+                .build()
+            )
+            .enableEParagonMode(EParagonMode.Builder()
+                .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
+                .setClientEmail("jan.kowalski-1@email.com")
+                .setClientPhone("500500500")
+                .setService("https://eparagon.cloud:4051")
+                .build()
+            )
+            .setTotal(3400)
+            .build();
+
+            m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+    }
+
+    private void printFiscalPrintoutInEParagonModeWithCustomHeaderFooterImages() throws PosnetException {
+
+        //---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Cancel edocument request if any in progress
+        Log.i(TAG, "Cancel eDocument request in progress");
+        CancelEDocumentRequest cancelEDocumentRequest = new CancelEDocumentRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelEDocumentRequest);
+            Log.i(TAG, "Cancel eDocument request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(1350)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        .setVatName("A", m_posnetServerAndroid.getVatCache())
+                        //.setVatIndex(0)
+                        .setPrice(2350)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                        .setTaxId("5558889944")
+                        .setHighlighted(false)
+                        .setDescription("NIP Nabywcy")
+                        .build()
+                )
+                .enableEParagonMode(EParagonMode.Builder()
+                        .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
+                        .setClientEmail("jan.kowalski-1@email.com")
+                        .setClientPhone("500500500")
+                        .setService("https://eparagon.cloud:4051")
+                        .build()
+                )
+                .setHeaderImage(2)
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setFooterImage(3)
+                        .setCashregisterNumber("Kasa 5")
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        .build()
+                )
+                .setTotal(3700)
                 .build();
 
         m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
