@@ -372,6 +372,226 @@ InvoiceOnlineRequest invoice = InvoiceOnlineRequest.Builder()
 m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
 ```
 
+### eParagon/eInvoice examples (pol. obsługa eParagonu i eFaktury)
+#### eParagon example
+```
+//---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Cancel edocument request if any in progress
+        Log.i(TAG, "Cancel eDocument request in progress");
+        CancelEDocumentRequest cancelEDocumentRequest = new CancelEDocumentRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelEDocumentRequest);
+            Log.i(TAG, "Cancel eDocument request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Print
+        ParagonRequest paragon = ParagonRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 1")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        //.setVatName("A", m_posnetServerAndroid.getVatCache())
+                        .setVatIndex(0)
+                        .setPrice(1235)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar 2")
+                        //.setVatPercent("23,00", m_posnetServerAndroid.getVatCache())
+                        //.setVatName("A", m_posnetServerAndroid.getVatCache())
+                        .setVatIndex(0)
+                        .setPrice(3456)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar stawka B")
+                        .setVatName("B", m_posnetServerAndroid.getVatCache())
+                        .setPrice(600)
+                        .setQuantity(1.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar stawka C")
+                        .setVatName("C", m_posnetServerAndroid.getVatCache())
+                        .setPrice(400)
+                        .setQuantity(2.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar stawka D")
+                        .setVatName("D", m_posnetServerAndroid.getVatCache())
+                        .setPrice(400)
+                        .setQuantity(3.0f)
+                        .build()
+                )
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Towar stawka E")
+                        .setVatName("E", m_posnetServerAndroid.getVatCache())
+                        .setPrice(250)
+                        .setQuantity(3.0f)
+                        .build()
+                )
+                .setTaxIdInfo(ParagonTaxIdInfo.Builder()
+                        .setTaxId("5558889944")
+                        .setHighlighted(false)
+                        .setDescription("NIP NABYWCY")
+                        .build()
+                )
+                .enableEParagonMode(EParagonMode.Builder()
+                        .setIdz("11")   //alternatively IDZ can be modelled as: "11|jan.kowalski-1@email.com|500500500"
+                        .setClientEmail("jan.kowalski-1@email.com")
+                        .setClientPhone("500500500")
+                        .setService("https://eparagon.cloud:4051")
+                        .build()
+                )
+                .setTotal(8041)
+                .setPaymentFormsTotal(9000)
+                .setRest(959)
+                .addPayment(PaymentObject.Builder()
+                        .setType(2)
+                        .setValue(9000)
+                        .setName("Konto klienta")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(8)
+                        .setValue(959)
+                        .setName("Konto klienta")
+                        .setRest(true)
+                        .build()
+                )
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, paragon);
+```
+
+#### eInvoice (eFaktura) example
+```
+//---------------------------------------------------------------------------
+        //Cancel request if any in progress
+        Log.i(TAG, "Cancel request in progress");
+        CancelRequest cancelRequest = new CancelRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelRequest);
+            Log.i(TAG, "Cancel request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Cancel edocument request if any in progress
+        Log.i(TAG, "Cancel eDocument request in progress");
+        CancelEDocumentRequest cancelEDocumentRequest = new CancelEDocumentRequest();
+        try {
+            Boolean isOk = m_posnetServerAndroid.sendRequestWait(m_host, m_port, cancelEDocumentRequest);
+            Log.i(TAG, "Cancel eDocument request if any: " + isOk);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //---------------------------------------------------------------------------
+        //Process Invoice as an eInvoice (pol. eFaktura)
+        InvoiceOnlineRequest invoice = InvoiceOnlineRequest.Builder()
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Coca-Cola")
+                        .setVatIndex(0)
+                        .setPrice(550)
+                        .setQuantity(2.0f)
+                        .setDescription("Some description")
+                        .setUnit("l")
+                        .setCode("DEF12345")
+                        .setPKWiU("50.41.34.1")
+                        .build())
+                .addLine(ParagonFakturaLine.Builder()
+                        .setName("Banana")
+                        .setVatIndex(2)
+                        .setPrice(100)
+                        .setQuantity(3.0f)
+                        .build()
+                )
+                .addExtraLine3("Pole dodatkowe #1", "top")
+                .addExtraLine3("Pole dodatkowe #2", "bottom")
+                .addExtraLine3("Pole dodatkowe #3", "middle")
+                .setHeader(FakturaOnlineTaxIdInfo.Builder()
+                        .setInvoiceName("Nazwa Faktury")
+                        .setCopies(0)
+                        .setOriginalCopyHeadline(true)
+                        .setLineWidth(40)
+                        .setFiscalLineWidth(40)
+                        .setBuyerName(new ArrayList<>(Arrays.asList("Nazwa firmy")))
+                        .setTaxId("584-222-98-89")
+                        .setBuyerAddress(new ArrayList<>(Arrays.asList("ul. Miejska 56", "88-888 Miasto")))
+                        .setBuyerSection(0)
+                        .setBuyerAttributes(0)
+                        .setNumber("56/2020")
+                        .setInvoiceNumberSection(0)
+                        .setInvoiceNumberAttributes(0)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(0)
+                        .setValue(1000)
+                        .setName("By cash")
+                        .setRest(false)
+                        .build()
+                )
+                .addPayment(PaymentObject.Builder()
+                        .setType(2)
+                        .setValue(400)
+                        .setName("By VISA card")
+                        .setRest(false)
+                        .build()
+                )
+                .setFooter(ParagonFakturaFooter.Builder()
+                        .setAction(ParagonFakturaFooter.ParagonFakturaFooterAction.cut_move)
+                        .setCashier("Jan Kowalski")
+                        .setSystemNumber("ABC1234")
+                        .setCashregisterNumber("Kasa 5")
+                        .setBarcode(FormsQrCode.Builder()
+                                .setCode("Hello")
+                                .setWidth(10)
+                                .setCorrectionLevel(3)
+                                .setInputType(FormsQrCode.FormsQrCodeInputType.ascii)
+                                .build())
+                        .build()
+                )
+                .enableEInvoiceMode(EInvoiceMode.Builder()
+                        .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
+                        .setClientEmail("jan.kowalski-1@email.com")
+                        .setClientPhone("500500500")
+                        .setService("https://eparagon.cloud:4051")
+                        .build()
+                )
+                .setTotal(1400)
+                .build();
+
+        m_posnetServerAndroid.sendRequest(m_host, m_port, invoice);
+```
+
 ### Discounts and Surcharges (pol. rabaty i narzuty)
 #### VAT discount
 ```
