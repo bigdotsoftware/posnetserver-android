@@ -732,7 +732,7 @@ public class MainActivity extends AppCompatActivity {
                         .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
                         .setClientEmail("jan.kowalski-1@email.com")
                         .setClientPhone("500500500")
-                        .setService("https://192.168.0.87:4051")
+                        .setService("https://eparagon.cloud:4051")
                         .build()
                 )
                 .setTotal(1400)
@@ -1801,7 +1801,7 @@ public class MainActivity extends AppCompatActivity {
                         .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
                         .setClientEmail("jan.kowalski-1@email.com")
                         .setClientPhone("500500500")
-                        .setService("https://192.168.0.87:4051")
+                        .setService("https://eparagon.cloud:4051")
                         .build()
                 )
                 .setTotal(3600)
@@ -1904,7 +1904,7 @@ public class MainActivity extends AppCompatActivity {
                         .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
                         .setClientEmail("jan.kowalski-1@email.com")
                         .setClientPhone("500500500")
-                        .setService("https://192.168.0.87:4051")
+                        .setService("https://eparagon.cloud:4051")
                         .build()
                 )
                 .setTotal(8041)
@@ -2012,7 +2012,7 @@ public class MainActivity extends AppCompatActivity {
                 .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
                 .setClientEmail("jan.kowalski-1@email.com")
                 .setClientPhone("500500500")
-                .setService("https://192.168.0.87:4051")
+                .setService("https://eparagon.cloud:4051")
                 .build()
             )
             .setTotal(3400)
@@ -2080,7 +2080,7 @@ public class MainActivity extends AppCompatActivity {
                         .setIdz("11")   //alternatively IDZ can be modelled: "11|jan.kowalski-1@email.com|500500500"
                         .setClientEmail("jan.kowalski-1@email.com")
                         .setClientPhone("500500500")
-                        .setService("https://192.168.0.87:4051")
+                        .setService("https://eparagon.cloud:4051")
                         .build()
                 )
                 .setHeaderImage(2)
